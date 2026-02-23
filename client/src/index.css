@@ -6,7 +6,7 @@
 /* ============================================================
    FINESSEOS PRO — Terminal-Noir OS Design System
    Design: Brutalist Dark OS / Cyberpunk Terminal
-   Substrate: Pure black. Signal: Electric blue. System: Mono.
+   Substrate: Dark charcoal. Signal: Electric blue. System: Mono.
    ============================================================ */
 
 @theme inline {
@@ -50,38 +50,43 @@
 
 :root {
   --radius: 0.75rem;
-  --background: oklch(0 0 0);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.08 0.002 285);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.08 0.002 285);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.55 0.22 264);
+  /* Lightened from pure black to dark charcoal */
+  --background: oklch(0.12 0.004 285);
+  --foreground: oklch(0.97 0 0);
+  /* Cards lifted from zinc-950 to zinc-900 level */
+  --card: oklch(0.17 0.004 285);
+  --card-foreground: oklch(0.97 0 0);
+  --popover: oklch(0.17 0.004 285);
+  --popover-foreground: oklch(0.97 0 0);
+  --primary: oklch(0.6 0.22 264);
   --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.12 0.003 285);
-  --secondary-foreground: oklch(0.85 0 0);
-  --muted: oklch(0.14 0.003 285);
-  --muted-foreground: oklch(0.52 0.008 285);
-  --accent: oklch(0.12 0.003 285);
-  --accent-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.22 0.005 285);
+  --secondary-foreground: oklch(0.92 0 0);
+  /* Muted text lifted for legibility */
+  --muted: oklch(0.22 0.005 285);
+  --muted-foreground: oklch(0.72 0.008 285);
+  --accent: oklch(0.22 0.005 285);
+  --accent-foreground: oklch(0.97 0 0);
   --destructive: oklch(0.62 0.24 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.22 0.004 285);
-  --input: oklch(0.18 0.004 285);
-  --ring: oklch(0.55 0.22 264);
-  --chart-1: oklch(0.55 0.22 264);
-  --chart-2: oklch(0.62 0.18 160);
-  --chart-3: oklch(0.65 0.2 55);
-  --chart-4: oklch(0.62 0.24 25);
-  --chart-5: oklch(0.7 0.15 300);
-  --sidebar: oklch(0.05 0.001 285);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.55 0.22 264);
+  /* Borders lightened for visibility */
+  --border: oklch(0.30 0.005 285);
+  --input: oklch(0.24 0.005 285);
+  --ring: oklch(0.6 0.22 264);
+  --chart-1: oklch(0.6 0.22 264);
+  --chart-2: oklch(0.65 0.18 160);
+  --chart-3: oklch(0.68 0.2 55);
+  --chart-4: oklch(0.65 0.24 25);
+  --chart-5: oklch(0.72 0.15 300);
+  /* Sidebar lifted from near-black to dark charcoal */
+  --sidebar: oklch(0.10 0.003 285);
+  --sidebar-foreground: oklch(0.97 0 0);
+  --sidebar-primary: oklch(0.6 0.22 264);
   --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.12 0.003 285);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.18 0.003 285);
-  --sidebar-ring: oklch(0.55 0.22 264);
+  --sidebar-accent: oklch(0.20 0.005 285);
+  --sidebar-accent-foreground: oklch(0.97 0 0);
+  --sidebar-border: oklch(0.26 0.004 285);
+  --sidebar-ring: oklch(0.6 0.22 264);
 }
 
 @layer base {
@@ -110,11 +115,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.25 0.004 285);
+    background: oklch(0.35 0.005 285);
     border-radius: 2px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.35 0.004 285);
+    background: oklch(0.45 0.005 285);
   }
 }
 
@@ -161,25 +166,25 @@
     box-shadow: 0 20px 40px rgba(37, 99, 235, 0.45);
   }
   .fos-card {
-    background: oklch(0.07 0.002 285);
-    border: 1px solid oklch(0.18 0.003 285);
+    background: oklch(0.17 0.004 285);
+    border: 1px solid oklch(0.28 0.004 285);
     border-radius: 1.5rem;
     transition: border-color 300ms ease, box-shadow 300ms ease;
   }
   .fos-card:hover {
-    border-color: oklch(0.28 0.003 285);
+    border-color: oklch(0.38 0.004 285);
   }
   .fos-mono {
     font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
     font-variant-ligatures: none;
   }
   .fos-label {
-    font-size: 0.625rem;
+    font-size: 0.7rem;
     font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.15em;
     font-family: 'JetBrains Mono', monospace;
-    color: oklch(0.45 0.006 285);
+    color: oklch(0.62 0.008 285);
   }
   .fos-heading {
     font-family: 'Space Grotesk', sans-serif;
@@ -207,9 +212,9 @@
   /* Gradient mesh background for hero areas */
   .fos-mesh-bg {
     background:
-      radial-gradient(ellipse 60% 40% at 20% 50%, rgba(37, 99, 235, 0.06) 0%, transparent 70%),
-      radial-gradient(ellipse 40% 60% at 80% 20%, rgba(16, 185, 129, 0.04) 0%, transparent 70%),
-      oklch(0 0 0);
+      radial-gradient(ellipse 60% 40% at 20% 50%, rgba(37, 99, 235, 0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 80% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 70%),
+      oklch(0.12 0.004 285);
   }
 
   /* Node card shimmer on hover */
@@ -221,7 +226,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.03) 0%, transparent 60%);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, transparent 60%);
     opacity: 0;
     transition: opacity 400ms ease;
     pointer-events: none;
@@ -242,7 +247,7 @@
     top: 0;
     bottom: 0;
     width: 2px;
-    background: linear-gradient(to bottom, oklch(0.55 0.22 264), transparent);
+    background: linear-gradient(to bottom, oklch(0.6 0.22 264), transparent);
     border-radius: 1px;
   }
 
@@ -252,7 +257,7 @@
     border: 1px solid rgba(16, 185, 129, 0.5);
   }
   .fos-toggle-off {
-    background: oklch(0.12 0.003 285);
-    border: 1px solid oklch(0.22 0.004 285);
+    background: oklch(0.20 0.005 285);
+    border: 1px solid oklch(0.30 0.005 285);
   }
 }

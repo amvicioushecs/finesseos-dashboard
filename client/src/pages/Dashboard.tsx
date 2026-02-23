@@ -99,7 +99,7 @@ const NavItem = ({ icon: Icon, label, active, onClick }: {
     className={`w-full flex items-center gap-5 px-6 py-4 rounded-2xl transition-all duration-300 group relative ${
       active
         ? 'bg-blue-600 text-white fos-nav-active scale-[1.02]'
-        : 'text-zinc-600 hover:text-white hover:bg-zinc-900'
+        : 'text-zinc-300 hover:text-white hover:bg-zinc-800'
     }`}
   >
     {active && (
@@ -118,7 +118,7 @@ const MobileNavItem = ({ icon: Icon, label, active, onClick }: {
 }) => (
   <button
     onClick={onClick}
-    className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${active ? 'text-blue-500 scale-110' : 'text-zinc-600'}`}
+    className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${active ? 'text-blue-500 scale-110' : 'text-zinc-300'}`}
   >
     <div className={`p-2.5 rounded-xl transition-all ${active ? 'bg-blue-500/10' : ''}`}>
       <Icon className="w-6 h-6" />
@@ -274,7 +274,7 @@ const AddLinkModal = ({ onClose, onAdd }: {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={!isGenerating ? onClose : undefined} />
-      <div className="relative w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-3xl p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+      <div className="relative w-full max-w-lg bg-zinc-900 border border-zinc-700 rounded-3xl p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -300,9 +300,9 @@ const AddLinkModal = ({ onClose, onAdd }: {
                 onChange={e => setDestination(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !isGenerating && handleGenerate()}
                 disabled={isGenerating}
-                className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-blue-500/50 transition-colors fos-mono disabled:opacity-50"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-blue-500/60 transition-colors fos-mono disabled:opacity-50"
               />
-              <p className="text-[11px] text-zinc-600 mt-2 fos-mono">Paste your affiliate link — AI will research the program and build the full intelligence package automatically.</p>
+              <p className="text-[11px] text-zinc-400 mt-2 fos-mono">Paste your affiliate link — AI will research the program and build the full intelligence package automatically.</p>
             </div>
 
             <button
@@ -457,12 +457,12 @@ const DashboardOverview = ({ links }: { links: AffiliateLink[] }) => {
         {/* Action Feed */}
         <div className="lg:col-span-2">
           <div className="fos-card overflow-hidden">
-            <div className="px-6 py-4 border-b border-zinc-800/60 flex items-center justify-between">
+              <div className="px-6 py-4 border-b border-zinc-700 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="fos-pulse-dot" />
-                <span className="fos-label text-zinc-500">Inevitable_Action_Feed</span>
+                <span className="fos-label text-zinc-300">Inevitable_Action_Feed</span>
               </div>
-              <span className="fos-label text-zinc-700">Live</span>
+              <span className="fos-label text-zinc-400">Live</span>
             </div>
             <div className="divide-y divide-zinc-800/40">
               {links.filter(l => l.status === 'alert').map(link => (
@@ -481,7 +481,7 @@ const DashboardOverview = ({ links }: { links: AffiliateLink[] }) => {
                   </span>
                 </div>
               ))}
-              <div className="px-6 py-5 flex items-center gap-4 bg-zinc-950/30">
+              <div className="px-6 py-5 flex items-center gap-4 bg-zinc-800/30">
                 <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500">
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
@@ -499,7 +499,7 @@ const DashboardOverview = ({ links }: { links: AffiliateLink[] }) => {
                     </div>
                     <div>
                       <p className="text-xs font-bold text-zinc-300 uppercase tracking-tight">{link.brandName} — {link.clicks} clicks</p>
-                      <p className="fos-label text-zinc-700 mt-1">Campaign active on {link.platform}</p>
+                      <p className="fos-label text-zinc-400 mt-1">Campaign active on {link.platform}</p>
                     </div>
                   </div>
                   <span className="fos-label text-emerald-500">{link.earnings}</span>
@@ -523,7 +523,7 @@ const DashboardOverview = ({ links }: { links: AffiliateLink[] }) => {
                 { label: 'Compliance Engine', value: 'ACTIVE', color: 'text-blue-400', mono: true },
                 { label: 'AI Intelligence', value: 'ONLINE', color: 'text-emerald-400', mono: true },
               ].map((m, i) => (
-                <div key={i} className="p-3.5 bg-black border border-zinc-800/60 rounded-xl flex items-center justify-between">
+                <div key={i} className="p-3.5 bg-zinc-800/60 border border-zinc-700 rounded-xl flex items-center justify-between">
                   <p className="fos-label">{m.label}</p>
                   <p className={`text-xs font-black ${m.color} ${m.mono ? 'fos-mono' : ''}`}>{m.value}</p>
                 </div>
@@ -545,11 +545,11 @@ const DashboardOverview = ({ links }: { links: AffiliateLink[] }) => {
                   <span className="text-sm font-black text-white uppercase tracking-tight">{link.brandName}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="p-3 bg-black border border-zinc-800/60 rounded-xl">
+                  <div className="p-3 bg-zinc-800/60 border border-zinc-700 rounded-xl">
                     <p className="fos-label mb-1">Clicks</p>
                     <p className="text-lg font-black text-white">{link.clicks}</p>
                   </div>
-                  <div className="p-3 bg-black border border-zinc-800/60 rounded-xl">
+                  <div className="p-3 bg-zinc-800/60 border border-zinc-700 rounded-xl">
                     <p className="fos-label mb-1">Earnings</p>
                     <p className="text-lg font-black text-emerald-400">{link.earnings}</p>
                   </div>
@@ -588,7 +588,7 @@ const CampaignVault = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-4xl font-black text-white tracking-tighter fos-heading">Campaign Vault</h2>
-          <p className="fos-label text-zinc-600 mt-2 italic">Management_Organized_By_Endpoint</p>
+          <p className="fos-label text-zinc-400 mt-2 italic">Management_Organized_By_Endpoint</p>
         </div>
         <button
           onClick={onAddLink}
@@ -601,9 +601,9 @@ const CampaignVault = ({
 
       {filtered.length === 0 ? (
         <div className="fos-card p-16 text-center">
-          <FolderOpen className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-          <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm fos-mono">No nodes found</p>
-          <p className="text-zinc-700 text-xs mt-2">Add your first affiliate link to create a node</p>
+          <FolderOpen className="w-12 h-12 text-zinc-400 mx-auto mb-4" />
+          <p className="text-zinc-300 font-bold uppercase tracking-widest text-sm fos-mono">No nodes found</p>
+          <p className="text-zinc-400 text-xs mt-2">Add your first affiliate link to create a node</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -615,7 +615,7 @@ const CampaignVault = ({
               {/* Delete button — top-right corner, visible on hover */}
               <button
                 onClick={(e) => { e.stopPropagation(); setPendingDelete(link); }}
-                className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-700 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all z-10"
+                className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all z-10"
                 title="Delete node"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -660,7 +660,7 @@ const CampaignVault = ({
                     <h3 className="text-base font-black text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight fos-heading truncate">
                       {link.brandName}
                     </h3>
-                    <div className="flex items-center gap-1.5 fos-label text-zinc-500 mt-0.5">
+                    <div className="flex items-center gap-1.5 fos-label text-zinc-400 mt-0.5">
                       <Fingerprint className="w-2.5 h-2.5" />
                       <span className="truncate">{link.platform} · {link.category}</span>
                     </div>
@@ -670,22 +670,22 @@ const CampaignVault = ({
                 {link.brandPrimaryColor && (
                   <div className="h-0.5 rounded-full mb-3 opacity-60" style={{ background: `linear-gradient(90deg, ${link.brandPrimaryColor}, transparent)` }} />
                 )}
-                <p className="fos-label text-zinc-600 font-mono text-[9px] truncate">{link.slug}</p>
+                <p className="fos-label text-zinc-400 font-mono text-[9px] truncate">{link.slug}</p>
               </div>
 
               <div className="grid grid-cols-3 gap-2 mb-6">
-                <div className="bg-black/60 p-3 rounded-xl border border-zinc-800/40 text-center relative">
+                <div className="bg-zinc-800/60 p-3 rounded-xl border border-zinc-700 text-center relative">
                   {link.trackingId && (
                     <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" title="Click tracking active" />
                   )}
                   <p className="fos-label mb-1">Clicks</p>
                   <p className="text-base font-black text-white">{link.clickCount !== undefined ? link.clickCount.toLocaleString() : link.clicks}</p>
                 </div>
-                <div className="bg-black/60 p-3 rounded-xl border border-zinc-800/40 text-center">
+                <div className="bg-zinc-800/60 p-3 rounded-xl border border-zinc-700 text-center">
                   <p className="fos-label mb-1">Assets</p>
                   <p className="text-base font-black text-white">{link.assets.length}</p>
                 </div>
-                <div className="bg-black/60 p-3 rounded-xl border border-zinc-800/40 text-center">
+                <div className="bg-zinc-800/60 p-3 rounded-xl border border-zinc-700 text-center">
                   <p className="fos-label mb-1">Comms</p>
                   <p className="text-base font-black text-emerald-400">{link.commission || '—'}</p>
                 </div>
@@ -709,7 +709,7 @@ const CampaignVault = ({
       )}
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!pendingDelete} onOpenChange={(open) => { if (!open) setPendingDelete(null); }}>
-        <AlertDialogContent className="bg-zinc-950 border border-zinc-800 text-white">
+        <AlertDialogContent className="bg-zinc-900 border border-zinc-700 text-white">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white font-black text-xl fos-heading">
               Delete Campaign Node?
@@ -942,7 +942,7 @@ const LinkExplorer = ({
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all fos-mono ${
               activeSection === s.id
                 ? 'bg-blue-600 text-white shadow-lg'
-                : 'text-zinc-600 hover:text-white hover:bg-zinc-900'
+                : 'text-zinc-300 hover:text-white hover:bg-zinc-800'
             }`}
           >
             <s.icon className="w-3.5 h-3.5" />
@@ -958,16 +958,16 @@ const LinkExplorer = ({
             {/* Destination URL */}
             <div className="fos-card p-6">
               <p className="fos-label mb-3">Destination URL</p>
-              <div className="flex items-center gap-3 p-3.5 bg-black border border-zinc-800/60 rounded-xl">
+              <div className="flex items-center gap-3 p-3.5 bg-zinc-800/60 border border-zinc-700 rounded-xl">
                 <Link2 className="w-4 h-4 text-blue-400 shrink-0" />
                 <span className="text-xs text-zinc-400 fos-mono truncate flex-1">{link.destination}</span>
                 <button
                   onClick={() => copyToClipboard(link.destination, 'URL Copied')}
-                  className="p-1.5 hover:bg-zinc-800 rounded-lg transition-all text-zinc-600 hover:text-white"
+                  className="p-1.5 hover:bg-zinc-700 rounded-lg transition-all text-zinc-400 hover:text-white"
                 >
                   <Copy className="w-3.5 h-3.5" />
                 </button>
-                <a href={link.destination} target="_blank" rel="noopener noreferrer" className="p-1.5 hover:bg-zinc-800 rounded-lg transition-all text-zinc-600 hover:text-white">
+                <a href={link.destination} target="_blank" rel="noopener noreferrer" className="p-1.5 hover:bg-zinc-700 rounded-lg transition-all text-zinc-400 hover:text-white">
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>
@@ -983,20 +983,20 @@ const LinkExplorer = ({
                   </div>
                   <span className="text-xs fos-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full">{link.clickCount ?? 0} clicks tracked</span>
                 </div>
-                <div className="flex items-center gap-3 p-3.5 bg-black border border-blue-500/20 rounded-xl">
+                <div className="flex items-center gap-3 p-3.5 bg-zinc-800/60 border border-blue-500/30 rounded-xl">
                   <span className="text-xs text-blue-300 fos-mono truncate flex-1">{window.location.origin}/go/{link.trackingId}</span>
                   <button
                     onClick={() => copyToClipboard(`${window.location.origin}/go/${link.trackingId}`, 'Tracked link copied!')}
-                    className="p-1.5 hover:bg-blue-500/20 rounded-lg transition-all text-zinc-600 hover:text-blue-400"
+                    className="p-1.5 hover:bg-blue-500/20 rounded-lg transition-all text-zinc-400 hover:text-blue-400"
                     title="Copy tracked link"
                   >
                     <Copy className="w-3.5 h-3.5" />
                   </button>
-                  <a href={`/go/${link.trackingId}`} target="_blank" rel="noopener noreferrer" className="p-1.5 hover:bg-blue-500/20 rounded-lg transition-all text-zinc-600 hover:text-blue-400" title="Test tracked link">
+                  <a href={`/go/${link.trackingId}`} target="_blank" rel="noopener noreferrer" className="p-1.5 hover:bg-blue-500/20 rounded-lg transition-all text-zinc-400 hover:text-blue-400" title="Test tracked link">
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>
-                <p className="text-xs text-zinc-600 mt-2">Share this link instead of your raw affiliate URL. Every click is counted automatically.</p>
+                <p className="text-xs text-zinc-400 mt-2">Share this link instead of your raw affiliate URL. Every click is counted automatically.</p>
               </div>
             )}
 
@@ -1010,7 +1010,7 @@ const LinkExplorer = ({
                   { label: 'Commission', value: link.commission || 'TBD', color: 'text-amber-400' },
                   { label: 'Assets', value: link.assets.length.toString(), color: 'text-white' },
                 ].map((m, i) => (
-                  <div key={i} className="p-4 bg-black border border-zinc-800/60 rounded-xl">
+                  <div key={i} className="p-4 bg-zinc-800/60 border border-zinc-700 rounded-xl">
                     <p className="fos-label mb-2">{m.label}</p>
                     <p className={`text-xl font-black tracking-tight fos-heading ${m.color}`}>{m.value}</p>
                   </div>
@@ -1034,7 +1034,7 @@ const LinkExplorer = ({
               <p className="fos-label mb-4">Target Platforms</p>
               <div className="space-y-2">
                 {link.intelligence.targetPlatforms.map((p, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 bg-black border border-zinc-800/60 rounded-xl">
+                  <div key={i} className="flex items-center gap-3 p-3 bg-zinc-800/60 border border-zinc-700 rounded-xl">
                     <Globe className="w-3.5 h-3.5 text-blue-400" />
                     <span className="text-xs font-bold text-zinc-300">{p}</span>
                   </div>
@@ -1043,12 +1043,12 @@ const LinkExplorer = ({
             </div>
             <div className="fos-card p-6">
               <p className="fos-label mb-4">Disclosure</p>
-              <div className="p-3.5 bg-black border border-zinc-800/60 rounded-xl">
+              <div className="p-3.5 bg-zinc-800/60 border border-zinc-700 rounded-xl">
                 <p className="text-xs text-zinc-400 leading-relaxed italic">"{link.compliance.disclosure}"</p>
               </div>
               <button
                 onClick={() => copyToClipboard(link.compliance.disclosure, 'Disclosure Copied')}
-                className="mt-3 w-full py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-500 hover:text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 fos-mono"
+                className="mt-3 w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 fos-mono"
               >
                 <Copy className="w-3 h-3" />
                 Copy Disclosure
@@ -1074,7 +1074,7 @@ const LinkExplorer = ({
               {/* Disclosure */}
               <div>
                 <p className="fos-label mb-3">Required Disclosure Language</p>
-                <div className="p-5 bg-black border border-zinc-800/60 rounded-2xl relative group">
+                <div className="p-5 bg-zinc-800/60 border border-zinc-700 rounded-2xl relative group">
                   <p className="text-sm text-zinc-300 leading-relaxed italic">"{link.compliance.disclosure}"</p>
                   <button
                     onClick={() => copyToClipboard(link.compliance.disclosure, 'Disclosure Copied')}
@@ -1090,7 +1090,7 @@ const LinkExplorer = ({
                 <p className="fos-label mb-3">Program Rules</p>
                 <div className="space-y-2">
                   {link.compliance.rules.map((rule, i) => (
-                    <div key={i} className="flex items-start gap-3 p-4 bg-black border border-zinc-800/60 rounded-xl">
+                    <div key={i} className="flex items-start gap-3 p-4 bg-zinc-800/60 border border-zinc-700 rounded-xl">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                       <span className="text-xs text-zinc-400">{rule}</span>
                     </div>
@@ -1142,20 +1142,20 @@ const LinkExplorer = ({
             className={`fos-card p-10 flex flex-col items-center justify-center gap-4 cursor-pointer transition-all border-2 border-dashed ${
               isDragging
                 ? 'border-blue-500 bg-blue-500/5 scale-[1.01]'
-                : 'border-zinc-800 hover:border-blue-500/40 hover:bg-zinc-900/30'
+                : 'border-zinc-700 hover:border-blue-500/50 hover:bg-zinc-800/30'
             }`}
           >
-            <div className={`p-4 rounded-2xl transition-all ${isDragging ? 'bg-blue-500/20' : 'bg-zinc-900'}`}>
-              <Upload className={`w-8 h-8 transition-all ${isDragging ? 'text-blue-400' : 'text-zinc-600'}`} />
+            <div className={`p-4 rounded-2xl transition-all ${isDragging ? 'bg-blue-500/20' : 'bg-zinc-800'}`}>
+              <Upload className={`w-8 h-8 transition-all ${isDragging ? 'text-blue-400' : 'text-zinc-400'}`} />
             </div>
             <div className="text-center">
               <p className="text-white font-bold text-sm">{isDragging ? 'Drop files here' : 'Drag & drop files or click to browse'}</p>
-              <p className="fos-label text-zinc-600 mt-1">Images, videos, PDFs, docs — up to 16MB each</p>
+              <p className="fos-label text-zinc-400 mt-1">Images, videos, PDFs, docs — up to 16MB each</p>
             </div>
             {uploadingFiles.length > 0 && (
               <div className="w-full space-y-2">
                 {uploadingFiles.map(f => (
-                  <div key={f.name} className="flex items-center gap-3 p-3 bg-black border border-zinc-800 rounded-xl">
+                  <div key={f.name} className="flex items-center gap-3 p-3 bg-zinc-800/60 border border-zinc-700 rounded-xl">
                     <RefreshCw className="w-3.5 h-3.5 text-blue-400 animate-spin shrink-0" />
                     <span className="text-xs text-zinc-400 fos-mono truncate flex-1">{f.name}</span>
                     <span className="fos-label text-blue-400">Uploading...</span>
@@ -1171,7 +1171,7 @@ const LinkExplorer = ({
               <p className="fos-label">Asset Vault — {displayAssets.length} files</p>
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 px-3 py-2 bg-zinc-900 hover:bg-blue-600 text-zinc-400 hover:text-white rounded-lg transition-all text-[10px] font-black uppercase tracking-widest fos-mono"
+                className="flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-blue-600 text-zinc-300 hover:text-white rounded-lg transition-all text-[10px] font-black uppercase tracking-widest fos-mono"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
                 Add Files
@@ -1179,21 +1179,21 @@ const LinkExplorer = ({
             </div>
             {displayAssets.length === 0 ? (
               <div className="p-12 text-center">
-                <Upload className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
-                <p className="text-zinc-600 text-sm font-bold uppercase tracking-widest fos-mono">No assets yet</p>
-                <p className="text-zinc-700 text-xs mt-2 fos-mono">Drop files above to add them to this node</p>
+                <Upload className="w-10 h-10 text-zinc-400 mx-auto mb-3" />
+                <p className="text-zinc-300 text-sm font-bold uppercase tracking-widest fos-mono">No assets yet</p>
+                <p className="text-zinc-400 text-xs mt-2 fos-mono">Drop files above to add them to this node</p>
               </div>
             ) : (
               <div className="divide-y divide-zinc-800/40">
                 {displayAssets.map(asset => (
-                  <div key={asset.id} className="px-6 py-4 flex items-center justify-between hover:bg-zinc-900/20 transition-all group">
+                    <div key={asset.id} className="px-6 py-4 flex items-center justify-between hover:bg-zinc-800/30 transition-all group">
                     <div className="flex items-center gap-4">
-                      <div className="p-2.5 bg-zinc-900 border border-zinc-800/60 rounded-xl text-blue-400">
+                      <div className="p-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-blue-400">
                         <AssetIcon type={asset.type as import('@/lib/data').AssetType} />
                       </div>
                       <div>
                         <p className="text-sm font-bold text-white">{asset.name}</p>
-                        <p className="fos-label text-zinc-700 mt-0.5">{asset.type.toUpperCase()} · {asset.size} · {asset.uploadedAt}</p>
+                        <p className="fos-label text-zinc-400 mt-0.5">{asset.type.toUpperCase()} · {asset.size} · {asset.uploadedAt}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
@@ -1202,14 +1202,14 @@ const LinkExplorer = ({
                           href={asset.url as string}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-600 hover:text-white rounded-lg transition-all"
+                          className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg transition-all"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                       )}
                       <button
                         onClick={() => copyToClipboard(asset.name, 'Asset name copied')}
-                        className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-600 hover:text-white rounded-lg transition-all"
+                        className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg transition-all"
                       >
                         <Copy className="w-3.5 h-3.5" />
                       </button>
@@ -1242,7 +1242,7 @@ const LinkExplorer = ({
                 <button
                   key={i}
                   onClick={() => copyToClipboard(kw, 'Keyword copied')}
-                  className="px-3 py-1.5 bg-black border border-zinc-800/60 hover:border-blue-500/40 text-zinc-400 hover:text-white text-xs rounded-lg transition-all fos-mono flex items-center gap-1.5 group"
+                  className="px-3 py-1.5 bg-zinc-800/60 border border-zinc-700 hover:border-blue-500/50 text-zinc-300 hover:text-white text-xs rounded-lg transition-all fos-mono flex items-center gap-1.5 group"
                 >
                   {kw}
                   <Copy className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-all" />
@@ -1259,12 +1259,12 @@ const LinkExplorer = ({
             </div>
             <div className="space-y-3">
               {link.intelligence.personas.map((p, i) => (
-                <div key={i} className="p-4 bg-black border border-zinc-800/60 rounded-xl">
+                <div key={i} className="p-4 bg-zinc-800/60 border border-zinc-700 rounded-xl">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-xs font-black text-white uppercase tracking-tight">{p.name}</p>
                     {p.platform && <span className="fos-label text-blue-500">{p.platform}</span>}
                   </div>
-                  <p className="text-[11px] text-zinc-500 mb-1.5"><span className="text-zinc-600 font-bold">Pain:</span> {p.pain}</p>
+                  <p className="text-[11px] text-zinc-300 mb-1.5"><span className="text-zinc-400 font-bold">Pain:</span> {p.pain}</p>
                   <p className="text-[11px] text-zinc-400"><span className="text-emerald-500 font-bold">Hook:</span> {p.hook}</p>
                 </div>
               ))}
@@ -1280,7 +1280,7 @@ const LinkExplorer = ({
             <p className="text-sm text-zinc-300 leading-relaxed italic mb-4">"{link.intelligence.marketingAngle}"</p>
             <button
               onClick={() => copyToClipboard(link.intelligence.marketingAngle, 'Angle copied')}
-              className="flex items-center gap-2 text-[9px] font-black text-zinc-600 hover:text-white uppercase tracking-widest transition-all fos-mono"
+              className="flex items-center gap-2 text-[9px] font-black text-zinc-400 hover:text-white uppercase tracking-widest transition-all fos-mono"
             >
               <Copy className="w-3 h-3" />
               Copy Angle
@@ -1297,12 +1297,12 @@ const LinkExplorer = ({
               {link.intelligence.contentSuggestions.map((s, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-3 p-3.5 bg-black border border-zinc-800/60 hover:border-blue-500/30 rounded-xl group transition-all cursor-pointer"
+                  className="flex items-start gap-3 p-3.5 bg-zinc-800/60 border border-zinc-700 hover:border-blue-500/40 rounded-xl group transition-all cursor-pointer"
                   onClick={() => copyToClipboard(s, 'Content idea copied')}
                 >
                   <ChevronRight className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
                   <span className="text-xs text-zinc-400 group-hover:text-white transition-colors">{s}</span>
-                  <Copy className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 ml-auto shrink-0 mt-0.5 transition-all" />
+                  <Copy className="w-3 h-3 text-zinc-500 group-hover:text-zinc-300 ml-auto shrink-0 mt-0.5 transition-all" />
                 </div>
               ))}
             </div>
@@ -1348,7 +1348,7 @@ const IntelligenceHub = ({ links }: { links: AffiliateLink[] }) => {
               <button
                 key={i}
                 onClick={() => copyToClipboard(kw, 'Keyword copied')}
-                className="px-3 py-1.5 bg-black border border-zinc-800/60 hover:border-blue-500/40 text-zinc-500 hover:text-white text-[10px] rounded-lg transition-all fos-mono"
+                className="px-3 py-1.5 bg-zinc-800/60 border border-zinc-700 hover:border-blue-500/50 text-zinc-300 hover:text-white text-[10px] rounded-lg transition-all fos-mono"
               >
                 {kw}
               </button>
@@ -1364,12 +1364,12 @@ const IntelligenceHub = ({ links }: { links: AffiliateLink[] }) => {
           </div>
           <div className="space-y-3">
             {allPersonas.slice(0, 5).map((p, i) => (
-              <div key={i} className="p-3.5 bg-black border border-zinc-800/60 rounded-xl">
+              <div key={i} className="p-3.5 bg-zinc-800/60 border border-zinc-700 rounded-xl">
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-xs font-black text-white uppercase tracking-tight">{p.name}</p>
                   <span className="fos-label text-blue-500">{p.brand}</span>
                 </div>
-                <p className="text-[10px] text-zinc-600">{p.hook}</p>
+                <p className="text-[10px] text-zinc-400">{p.hook}</p>
               </div>
             ))}
           </div>
@@ -1389,9 +1389,9 @@ const IntelligenceHub = ({ links }: { links: AffiliateLink[] }) => {
                 <div key={i}>
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-xs font-bold text-zinc-400">{platform}</span>
-                    <span className="fos-label text-zinc-600">{pct}%</span>
+                    <span className="fos-label text-zinc-400">{pct}%</span>
                   </div>
-                  <div className="h-1.5 bg-zinc-900 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-zinc-700 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-blue-600 rounded-full transition-all duration-700"
                       style={{ width: `${pct}%` }}
@@ -1416,13 +1416,13 @@ const IntelligenceHub = ({ links }: { links: AffiliateLink[] }) => {
             <div key={i} className="fos-card p-5 hover:border-zinc-700 transition-all">
               <div className="flex items-center justify-between mb-3">
                 <span className="fos-label text-blue-500">{news.platform}</span>
-                <div className="flex items-center gap-1.5 text-zinc-700">
+                  <div className="flex items-center gap-1.5 text-zinc-400">
                   <Clock className="w-3 h-3" />
-                  <span className="fos-label text-zinc-700">{news.date}</span>
+                  <span className="fos-label text-zinc-400">{news.date}</span>
                 </div>
               </div>
               <h4 className="text-xs font-black text-white mb-2 uppercase tracking-tight">{news.title}</h4>
-              <p className="text-xs text-zinc-500 leading-relaxed">{news.body}</p>
+              <p className="text-xs text-zinc-300 leading-relaxed">{news.body}</p>
             </div>
           ))}
         </div>
@@ -1439,9 +1439,9 @@ const IntelligenceHub = ({ links }: { links: AffiliateLink[] }) => {
             <div key={link.id} className="fos-card p-5 fos-accent-line pl-7 hover:border-zinc-700 transition-all">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-black text-white uppercase tracking-tight">{link.brandName}</span>
-                <span className="fos-label text-zinc-600">{link.platform}</span>
+                <span className="fos-label text-zinc-400">{link.platform}</span>
               </div>
-              <p className="text-xs text-zinc-500 italic leading-relaxed">"{link.intelligence.marketingAngle}"</p>
+              <p className="text-xs text-zinc-300 italic leading-relaxed">"{link.intelligence.marketingAngle}"</p>
             </div>
           ))}
         </div>
@@ -1462,7 +1462,7 @@ const SystemConfig = () => {
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24 lg:pb-0">
       <div>
         <h2 className="text-4xl font-black text-white tracking-tighter fos-heading">System Config</h2>
-        <p className="fos-label text-zinc-600 mt-2 italic">Infrastructure_Control_Panel</p>
+        <p className="fos-label text-zinc-400 mt-2 italic">Infrastructure_Control_Panel</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -1475,19 +1475,19 @@ const SystemConfig = () => {
             </div>
             <div className="space-y-3">
               {systemNodes.map(node => (
-                <div key={node.id} className="p-5 bg-black border border-zinc-800/60 rounded-2xl flex items-center justify-between group hover:border-blue-500/20 transition-all">
+                <div key={node.id} className="p-5 bg-zinc-800/60 border border-zinc-700 rounded-2xl flex items-center justify-between group hover:border-blue-500/20 transition-all">
                   <div className="flex items-center gap-4">
                     <div className="fos-pulse-dot" />
                     <div>
                       <p className="text-sm font-black text-white tracking-widest fos-mono">{node.id}</p>
-                      <p className="fos-label text-zinc-700 mt-1">Load: {node.load} · Region: {node.region}</p>
+                      <p className="fos-label text-zinc-400 mt-1">Load: {node.load} · Region: {node.region}</p>
                     </div>
                   </div>
                   <div className="text-right flex items-center gap-4">
                     <p className="text-xs font-black text-blue-400 fos-mono">{node.ping}</p>
                     <button
                       onClick={() => toast.success(`${node.id} re-synced`)}
-                      className="text-[9px] font-black text-zinc-700 uppercase tracking-widest hover:text-white transition-colors fos-mono px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 rounded-lg"
+                      className="text-[9px] font-black text-zinc-300 uppercase tracking-widest hover:text-white transition-colors fos-mono px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 rounded-lg"
                     >
                       Re_Sync
                     </button>
@@ -1505,15 +1505,15 @@ const SystemConfig = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {apiIntegrations.map(api => (
-                <div key={api.network} className="p-5 bg-black border border-zinc-800/60 rounded-2xl group hover:border-emerald-500/20 transition-all">
+                <div key={api.network} className="p-5 bg-zinc-800/60 border border-zinc-700 rounded-2xl group hover:border-emerald-500/20 transition-all">
                   <div className="flex justify-between items-start mb-4">
                     <p className="text-xs font-black text-white uppercase tracking-tight">{api.network}</p>
                     <StatusBadge status={api.status} />
                   </div>
-                  <code className="text-[10px] text-zinc-700 block mb-4 fos-mono">{api.key}</code>
+                  <code className="text-[10px] text-zinc-400 block mb-4 fos-mono">{api.key}</code>
                   <button
                     onClick={() => toast.info('Feature coming soon', { description: 'API key management will be available in the next release.' })}
-                    className="w-full py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-[9px] font-black text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all uppercase tracking-widest fos-mono"
+                    className="w-full py-2.5 bg-zinc-700 border border-zinc-600 rounded-xl text-[9px] font-black text-zinc-300 hover:text-white hover:bg-zinc-600 transition-all uppercase tracking-widest fos-mono"
                   >
                     Update_Key
                   </button>
@@ -1538,17 +1538,17 @@ const SystemConfig = () => {
               ].map(item => (
                 <div
                   key={item.key}
-                  className={`flex items-center justify-between p-4 bg-black border border-zinc-800/60 rounded-2xl ${!toggles[item.key] ? 'opacity-50' : ''}`}
+                  className={`flex items-center justify-between p-4 bg-zinc-800/60 border border-zinc-700 rounded-2xl ${!toggles[item.key] ? 'opacity-50' : ''}`}
                 >
                   <div>
                     <p className="text-[10px] font-black text-white uppercase tracking-tight leading-none">{item.label}</p>
-                    <p className="fos-label text-zinc-700 mt-1.5">{item.desc}</p>
+                    <p className="fos-label text-zinc-400 mt-1.5">{item.desc}</p>
                   </div>
                   <button
                     onClick={() => setToggles(t => ({ ...t, [item.key]: !t[item.key] }))}
                     className={`w-10 h-5 rounded-full flex items-center px-1 transition-all ${toggles[item.key] ? 'fos-toggle-on' : 'fos-toggle-off'}`}
                   >
-                    <div className={`w-3 h-3 rounded-full transition-all ${toggles[item.key] ? 'bg-emerald-500 ml-auto' : 'bg-zinc-600'}`} />
+                    <div className={`w-3 h-3 rounded-full transition-all ${toggles[item.key] ? 'bg-emerald-500 ml-auto' : 'bg-zinc-400'}`} />
                   </button>
                 </div>
               ))}
@@ -1557,16 +1557,16 @@ const SystemConfig = () => {
 
           {/* System Identity */}
           <section className="fos-card p-7 text-center">
-            <p className="fos-label text-zinc-700 mb-6">System Identity</p>
+            <p className="fos-label text-zinc-400 mb-6">System Identity</p>
             <div className="w-16 h-16 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center font-black text-white text-2xl shadow-2xl fos-glow-blue mb-5">
               JD
             </div>
             <p className="text-lg font-black text-white tracking-tight uppercase fos-heading leading-none">JD_PRO_ADMIN</p>
-            <p className="fos-label text-zinc-700 mt-2">ID: FOS_992_X_ALPHA</p>
+            <p className="fos-label text-zinc-400 mt-2">ID: FOS_992_X_ALPHA</p>
             <div className="grid grid-cols-2 gap-3 mt-6">
               <button
                 onClick={() => toast.info('Feature coming soon')}
-                className="py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-[9px] font-black text-zinc-500 uppercase tracking-widest hover:text-white transition-colors fos-mono"
+                className="py-2.5 bg-zinc-700 border border-zinc-600 rounded-xl text-[9px] font-black text-zinc-300 uppercase tracking-widest hover:text-white transition-colors fos-mono"
               >
                 Edit_Profile
               </button>
@@ -1677,7 +1677,7 @@ export default function Dashboard() {
   // The useAuth hook will redirect to login if user is not authenticated
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-6">
           <img
             src="https://files.manuscdn.com/user_upload_by_module/session_file/94821429/gUEtbVDJTcocGKPG.png"
@@ -1689,7 +1689,7 @@ export default function Dashboard() {
               filter: 'drop-shadow(0 0 20px rgba(96,165,250,0.7)) drop-shadow(0 0 40px rgba(139,92,246,0.4)) brightness(1.2)',
             }}
           />
-          <div className="flex items-center gap-2 text-zinc-600 text-xs font-mono tracking-[0.3em] uppercase">
+          <div className="flex items-center gap-2 text-zinc-400 text-xs font-mono tracking-[0.3em] uppercase">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" />
             Authenticating...
           </div>
@@ -1699,7 +1699,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-300 selection:bg-blue-500/30 selection:text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+    <div className="min-h-screen bg-background text-zinc-100 selection:bg-blue-500/30 selection:text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
 
       {/* Add Link Modal */}
       {showAddModal && (
@@ -1710,7 +1710,7 @@ export default function Dashboard() {
       )}
 
       {/* ── Sidebar ── */}
-      <aside className="fixed left-0 top-0 bottom-0 w-72 bg-zinc-950 border-r border-zinc-900 hidden md:flex flex-col z-50" style={{ backgroundImage: 'radial-gradient(ellipse 120% 60% at 0% 0%, rgba(37,99,235,0.08) 0%, transparent 70%)' }}>
+      <aside className="fixed left-0 top-0 bottom-0 w-72 bg-zinc-900 border-r border-zinc-700 hidden md:flex flex-col z-50" style={{ backgroundImage: 'radial-gradient(ellipse 120% 60% at 0% 0%, rgba(37,99,235,0.08) 0%, transparent 70%)' }}>
         {/* Logo */}
         <div className="p-6 pb-0">
           <div className="flex items-center gap-3 group cursor-default">
@@ -1725,7 +1725,7 @@ export default function Dashboard() {
               }}
             />
           </div>
-          <p className="fos-label text-zinc-700 mt-3 italic pl-1">Inevitable_Action_Layer</p>
+          <p className="fos-label text-zinc-400 mt-3 italic pl-1">Inevitable_Action_Layer</p>
         </div>
 
         {/* Nav */}
@@ -1742,10 +1742,10 @@ export default function Dashboard() {
         </nav>
 
         {/* Bottom */}
-        <div className="p-5 border-t border-zinc-900">
+        <div className="p-5 border-t border-zinc-700">
           <button
             onClick={() => { setActiveTab('settings'); setSelectedLink(null); }}
-            className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all group hover:bg-zinc-900 ${activeTab === 'settings' ? 'text-white bg-zinc-900' : 'text-zinc-600'}`}
+            className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all group hover:bg-zinc-800 ${activeTab === 'settings' ? 'text-white bg-zinc-800' : 'text-zinc-300'}`}
           >
             <Settings className={`w-5 h-5 transition-transform duration-500 ${activeTab === 'settings' ? 'rotate-90' : 'group-hover:rotate-90'}`} />
             <span className="fos-label">Sys_Config</span>
@@ -1754,7 +1754,7 @@ export default function Dashboard() {
       </aside>
 
       {/* ── Mobile Nav ── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-2xl border-t border-zinc-900 h-20 flex items-center justify-around px-4 z-40">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-2xl border-t border-zinc-700 h-20 flex items-center justify-around px-4 z-40">
         {navItems.map(item => (
           <MobileNavItem
             key={item.id}
@@ -1779,7 +1779,7 @@ export default function Dashboard() {
           <div className="animate-in slide-in-from-left-6 duration-500">
             <div className="flex items-center gap-2.5 mb-3">
               <div className="fos-pulse-dot" />
-              <span className="fos-label text-zinc-600">System_State: Initialized_Link-First</span>
+              <span className="fos-label text-zinc-400">System_State: Initialized_Link-First</span>
             </div>
             <h1 className="text-5xl font-black text-white tracking-tighter leading-none fos-heading">
               {pageTitle()}
@@ -1787,13 +1787,13 @@ export default function Dashboard() {
             </h1>
           </div>
 
-          <div className="flex items-center gap-3 bg-zinc-950/80 border border-zinc-900 p-2.5 rounded-2xl backdrop-blur-md">
-            <div className="px-5 py-3 bg-black rounded-xl border border-zinc-800/60 flex items-center gap-3 group focus-within:border-blue-500/40 transition-all">
-              <Search className="w-4 h-4 text-zinc-700 group-focus-within:text-blue-400 transition-colors" />
+          <div className="flex items-center gap-3 bg-zinc-800/80 border border-zinc-700 p-2.5 rounded-2xl backdrop-blur-md">
+              <div className="px-5 py-3 bg-zinc-900 rounded-xl border border-zinc-700 flex items-center gap-3 group focus-within:border-blue-500/60 transition-all">
+              <Search className="w-4 h-4 text-zinc-400 group-focus-within:text-blue-400 transition-colors" />
               <input
                 type="text"
                 placeholder="Search campaigns..."
-                className="bg-transparent text-[11px] font-bold text-zinc-300 focus:outline-none w-52 placeholder:text-zinc-800 uppercase tracking-widest fos-mono"
+                className="bg-transparent text-[11px] font-bold text-zinc-100 focus:outline-none w-52 placeholder:text-zinc-500 uppercase tracking-widest fos-mono"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
@@ -1841,10 +1841,10 @@ export default function Dashboard() {
         {activeTab === 'settings' && <SystemConfig />}
 
         {/* Footer */}
-        <footer className="mt-24 pt-10 border-t border-zinc-900 hidden md:flex justify-between items-center text-zinc-700">
+        <footer className="mt-24 pt-10 border-t border-zinc-700 hidden md:flex justify-between items-center text-zinc-400">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center border border-zinc-900">
-              <Zap className="w-5 h-5 text-zinc-800" />
+            <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center border border-zinc-700">
+              <Zap className="w-5 h-5 text-zinc-400" />
             </div>
             <p className="fos-label">FinesseOS.pro — Campaign-Centric Architecture v2.0</p>
           </div>

@@ -78,3 +78,5 @@
 - [x] Generate and add favicon.ico and apple-touch-icon to the site
 - [x] Make landing page header clearly visible with solid dark full-width background
 - [x] Generate sitemap.xml and robots.txt for Google Search Console
+- [x] Lighten backgrounds throughout landing page and dashboard for better readability
+- [x] Increase text sizes and contrast across all pages
