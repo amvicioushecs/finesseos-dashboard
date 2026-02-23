@@ -245,7 +245,7 @@ export default function Landing() {
           }} />
         </div>
 
-        <div className="relative max-w-5xl mx-auto px-6 text-center">
+        <div className="relative max-w-5xl mx-auto px-6 text-center" style={{background: 'linear-gradient(to right, #1f2b2e, #25253c, #0a0a0f)'}}>
           {/* Official Logo */}
           <div className="flex justify-center mb-8">
             <img
