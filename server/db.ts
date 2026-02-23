@@ -1,11 +1,10 @@
-import { eq } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, affiliateNodes, nodeAssets, InsertAffiliateNode, InsertNodeAsset } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -18,23 +17,16 @@ export async function getDb() {
   return _db;
 }
 
-export async function upsertUser(user: InsertUser): Promise<void> {
-  if (!user.openId) {
-    throw new Error("User openId is required for upsert");
-  }
+// ─── User helpers ────────────────────────────────────────────────────────────
 
+export async function upsertUser(user: InsertUser): Promise<void> {
+  if (!user.openId) throw new Error("User openId is required for upsert");
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
-    return;
-  }
+  if (!db) { console.warn("[Database] Cannot upsert user: database not available"); return; }
 
   try {
-    const values: InsertUser = {
-      openId: user.openId,
-    };
+    const values: InsertUser = { openId: user.openId };
     const updateSet: Record<string, unknown> = {};
-
     const textFields = ["name", "email", "loginMethod"] as const;
     type TextField = (typeof textFields)[number];
 
@@ -45,32 +37,15 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values[field] = normalized;
       updateSet[field] = normalized;
     };
-
     textFields.forEach(assignNullable);
 
-    if (user.lastSignedIn !== undefined) {
-      values.lastSignedIn = user.lastSignedIn;
-      updateSet.lastSignedIn = user.lastSignedIn;
-    }
-    if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
-    }
+    if (user.lastSignedIn !== undefined) { values.lastSignedIn = user.lastSignedIn; updateSet.lastSignedIn = user.lastSignedIn; }
+    if (user.role !== undefined) { values.role = user.role; updateSet.role = user.role; }
+    else if (user.openId === ENV.ownerOpenId) { values.role = 'admin'; updateSet.role = 'admin'; }
+    if (!values.lastSignedIn) values.lastSignedIn = new Date();
+    if (Object.keys(updateSet).length === 0) updateSet.lastSignedIn = new Date();
 
-    if (!values.lastSignedIn) {
-      values.lastSignedIn = new Date();
-    }
-
-    if (Object.keys(updateSet).length === 0) {
-      updateSet.lastSignedIn = new Date();
-    }
-
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
-    });
+    await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
@@ -79,14 +54,197 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
 export async function getUserByOpenId(openId: string) {
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
-    return undefined;
-  }
-
+  if (!db) { console.warn("[Database] Cannot get user: database not available"); return undefined; }
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ─── JSON helpers ─────────────────────────────────────────────────────────────
+
+function parseJson<T>(text: string | null | undefined, fallback: T): T {
+  if (!text) return fallback;
+  try { return JSON.parse(text) as T; } catch { return fallback; }
+}
+
+function toJson(value: unknown): string {
+  return JSON.stringify(value ?? []);
+}
+
+// ─── Node shape for the frontend ─────────────────────────────────────────────
+
+export type FrontendNode = {
+  id: string;
+  brandName: string;
+  slug: string;
+  destination: string;
+  platform: string;
+  category: string;
+  status: 'active' | 'paused' | 'alert';
+  clicks: string;
+  earnings: string;
+  commission: string;
+  createdAt: string;
+  compliance: {
+    disclosure: string;
+    rules: string[];
+    status: 'passed' | 'warning' | 'failed';
+    lastChecked: string;
+    ftcNotes: string;
+  };
+  intelligence: {
+    keywordResearch: string[];
+    marketingAngle: string;
+    personas: Array<{ name: string; pain: string; hook: string; platform: string }>;
+    contentSuggestions: string[];
+    targetPlatforms: string[];
+    strategyNotes: string;
+  };
+  assets: Array<{ id: string; name: string; type: string; size: string; url: string; uploadedAt: string }>;
+};
+
+export function nodeRowToFrontend(row: typeof affiliateNodes.$inferSelect, assets: typeof nodeAssets.$inferSelect[] = []): FrontendNode {
+  return {
+    id: String(row.id),
+    brandName: row.brandName,
+    slug: row.slug,
+    destination: row.destination,
+    platform: row.platform,
+    category: row.category,
+    status: row.status,
+    clicks: row.clicks,
+    earnings: row.earnings,
+    commission: row.commission,
+    createdAt: row.createdAt.toISOString().split('T')[0],
+    compliance: {
+      disclosure: row.complianceDisclosure ?? '',
+      rules: parseJson<string[]>(row.complianceRulesJson, []),
+      status: row.complianceStatus,
+      lastChecked: row.updatedAt.toISOString().split('T')[0],
+      ftcNotes: row.complianceFtcNotes ?? 'AI compliance scan complete.',
+    },
+    intelligence: {
+      keywordResearch: parseJson<string[]>(row.keywordResearchJson, []),
+      marketingAngle: row.marketingAngle ?? '',
+      personas: parseJson<Array<{ name: string; pain: string; hook: string; platform: string }>>(row.personasJson, []),
+      contentSuggestions: parseJson<string[]>(row.contentSuggestionsJson, []),
+      targetPlatforms: parseJson<string[]>(row.targetPlatformsJson, []),
+      strategyNotes: row.strategyNotes ?? '',
+    },
+    assets: assets.map(a => ({
+      id: String(a.id),
+      name: a.originalName,
+      type: a.assetType,
+      size: formatFileSize(a.fileSize),
+      url: a.url,
+      uploadedAt: a.createdAt.toISOString().split('T')[0],
+    })),
+  };
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes}B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+}
+
+// ─── Affiliate Node queries ───────────────────────────────────────────────────
+
+export async function getNodesByUserId(userId: number): Promise<FrontendNode[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select().from(affiliateNodes).where(eq(affiliateNodes.userId, userId)).orderBy(desc(affiliateNodes.createdAt));
+  // Fetch assets for all nodes
+  const nodeIds = rows.map(r => r.id);
+  let allAssets: typeof nodeAssets.$inferSelect[] = [];
+  if (nodeIds.length > 0) {
+    allAssets = await db.select().from(nodeAssets).where(eq(nodeAssets.userId, userId));
+  }
+  return rows.map(row => {
+    const rowAssets = allAssets.filter(a => a.nodeId === row.id);
+    return nodeRowToFrontend(row, rowAssets);
+  });
+}
+
+export async function getNodeById(nodeId: number, userId: number): Promise<FrontendNode | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(affiliateNodes).where(and(eq(affiliateNodes.id, nodeId), eq(affiliateNodes.userId, userId))).limit(1);
+  if (rows.length === 0) return null;
+  const assets = await db.select().from(nodeAssets).where(and(eq(nodeAssets.nodeId, nodeId), eq(nodeAssets.userId, userId)));
+  return nodeRowToFrontend(rows[0], assets);
+}
+
+export async function createNode(userId: number, data: {
+  brandName: string; slug: string; destination: string; platform: string; category: string;
+  status: 'active' | 'paused' | 'alert'; clicks: string; earnings: string; commission: string;
+  complianceDisclosure: string; complianceRules: string[]; complianceStatus: 'passed' | 'warning' | 'failed';
+  complianceFtcNotes: string; keywordResearch: string[]; marketingAngle: string;
+  personas: Array<{ name: string; pain: string; hook: string; platform: string }>;
+  contentSuggestions: string[]; targetPlatforms: string[]; strategyNotes: string;
+}): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const insert: InsertAffiliateNode = {
+    userId,
+    brandName: data.brandName,
+    slug: data.slug,
+    destination: data.destination,
+    platform: data.platform,
+    category: data.category,
+    status: data.status,
+    clicks: data.clicks,
+    earnings: data.earnings,
+    commission: data.commission,
+    complianceDisclosure: data.complianceDisclosure,
+    complianceRulesJson: toJson(data.complianceRules),
+    complianceStatus: data.complianceStatus,
+    complianceFtcNotes: data.complianceFtcNotes,
+    keywordResearchJson: toJson(data.keywordResearch),
+    marketingAngle: data.marketingAngle,
+    personasJson: toJson(data.personas),
+    contentSuggestionsJson: toJson(data.contentSuggestions),
+    targetPlatformsJson: toJson(data.targetPlatforms),
+    strategyNotes: data.strategyNotes,
+  };
+
+  const [result] = await db.insert(affiliateNodes).values(insert);
+  return (result as { insertId: number }).insertId;
+}
+
+export async function deleteNode(nodeId: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(nodeAssets).where(and(eq(nodeAssets.nodeId, nodeId), eq(nodeAssets.userId, userId)));
+  await db.delete(affiliateNodes).where(and(eq(affiliateNodes.id, nodeId), eq(affiliateNodes.userId, userId)));
+}
+
+export async function updateNodeStatus(nodeId: number, userId: number, status: 'active' | 'paused' | 'alert'): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(affiliateNodes).set({ status }).where(and(eq(affiliateNodes.id, nodeId), eq(affiliateNodes.userId, userId)));
+}
+
+// ─── Asset queries ────────────────────────────────────────────────────────────
+
+export async function getAssetsByNodeId(nodeId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(nodeAssets).where(and(eq(nodeAssets.nodeId, nodeId), eq(nodeAssets.userId, userId))).orderBy(desc(nodeAssets.createdAt));
+}
+
+export async function createAsset(data: InsertNodeAsset): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(nodeAssets).values(data);
+  return (result as { insertId: number }).insertId;
+}
+
+export async function deleteAsset(assetId: number, userId: number): Promise<string> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const rows = await db.select().from(nodeAssets).where(and(eq(nodeAssets.id, assetId), eq(nodeAssets.userId, userId))).limit(1);
+  if (rows.length === 0) throw new Error("Asset not found");
+  await db.delete(nodeAssets).where(eq(nodeAssets.id, assetId));
+  return rows[0].s3Key;
+}

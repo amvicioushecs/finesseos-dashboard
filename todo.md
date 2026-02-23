@@ -41,7 +41,16 @@
 - [x] Vitest tests for auth.logout (1 test)
 
 ## Upcoming
-- [ ] Asset upload flow (drag-and-drop images/banners per node, S3 storage)
-- [ ] Persist nodes to database (currently in-memory state)
-- [ ] Landing page (FinesseOS.pro public-facing page)
+- [x] Asset upload flow (drag-and-drop images/banners per node, S3 storage)
+- [x] Persist nodes to database (currently in-memory state)
+- [x] Landing page (FinesseOS.pro public-facing page)
 - [ ] User authentication gate for dashboard
+
+## In Progress
+- [x] Database schema: affiliateNodes, nodeAssets tables
+- [x] DB migration via pnpm db:push
+- [x] tRPC procedures: nodes.list, nodes.create, nodes.delete, nodes.update
+- [x] tRPC procedures: assets.upload, assets.list, assets.delete
+- [x] Wire Dashboard vault to DB (replace local state with trpc queries/mutations)
+- [x] S3 asset upload flow with drag-and-drop per node
+- [x] FinesseOS.pro landing page (public-facing, converts visitors to users)

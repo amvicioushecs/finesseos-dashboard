@@ -4,7 +4,9 @@
 // Layout: Fixed 320px sidebar + main content area
 // ============================================================
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { useAuth } from '@/_core/hooks/useAuth';
+import { getLoginUrl } from '@/const';
 import { trpc } from '@/lib/trpc';
 import {
   LayoutDashboard,
@@ -52,7 +54,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { initialLinks, systemNodes, apiIntegrations, intelligenceNews, type AffiliateLink, type Asset } from '@/lib/data';
-import { nanoid } from 'nanoid';
+
+const genId = () => Math.random().toString(36).slice(2, 8);
 
 // ─── Types ────────────────────────────────────────────────
 type ActiveTab = 'dashboard' | 'vault' | 'intelligence' | 'settings';
@@ -160,6 +163,37 @@ const AddLinkModal = ({ onClose, onAdd }: {
     disclosure: string; complianceRules: string[]; complianceStatus: 'passed' | 'warning' | 'failed';
   }>(null);
 
+  const utils = trpc.useUtils();
+
+  const createNodeMutation = trpc.nodes.create.useMutation({
+    onSuccess: (node) => {
+      utils.nodes.list.invalidate();
+      if (node) {
+        onAdd({
+          id: node.id,
+          brandName: node.brandName,
+          slug: node.slug,
+          platform: node.platform,
+          destination: node.destination,
+          status: node.status,
+          clicks: node.clicks,
+          earnings: node.earnings,
+          commission: node.commission,
+          category: node.category,
+          createdAt: node.createdAt,
+          compliance: node.compliance,
+          assets: (node.assets ?? []).map(a => ({ ...a, type: a.type as import('@/lib/data').AssetType })),
+          intelligence: node.intelligence,
+        });
+      }
+      toast.success('Node Created', { description: `${node?.brandName} affiliate node is now live in your vault.` });
+      onClose();
+    },
+    onError: (err) => {
+      toast.error('Failed to save node', { description: err.message });
+    },
+  });
+
   const generateMutation = trpc.affiliate.generateIntelligence.useMutation({
     onSuccess: (data) => {
       setGeneratedData(data);
@@ -184,8 +218,7 @@ const AddLinkModal = ({ onClose, onAdd }: {
 
   const handleCreate = () => {
     if (!generatedData) return;
-    const newLink: AffiliateLink = {
-      id: nanoid(6),
+    createNodeMutation.mutate({
       brandName: generatedData.brandName,
       slug: generatedData.slug,
       platform: generatedData.platform,
@@ -195,30 +228,21 @@ const AddLinkModal = ({ onClose, onAdd }: {
       earnings: '$0',
       commission: generatedData.commission,
       category: generatedData.category,
-      createdAt: new Date().toISOString().split('T')[0],
-      compliance: {
-        disclosure: generatedData.disclosure,
-        rules: generatedData.complianceRules,
-        status: generatedData.complianceStatus,
-        lastChecked: new Date().toISOString().split('T')[0],
-        ftcNotes: 'AI compliance scan complete. Disclosure language meets FTC requirements.',
-      },
-      assets: [],
-      intelligence: {
-        keywordResearch: generatedData.keywordResearch,
-        marketingAngle: generatedData.marketingAngle,
-        personas: generatedData.personas,
-        contentSuggestions: generatedData.contentSuggestions,
-        targetPlatforms: generatedData.targetPlatforms,
-        strategyNotes: generatedData.strategyNotes,
-      },
-    };
-    onAdd(newLink);
-    toast.success('Node Created', { description: `${generatedData.brandName} affiliate node is now live in your vault.` });
-    onClose();
+      complianceDisclosure: generatedData.disclosure,
+      complianceRules: generatedData.complianceRules,
+      complianceStatus: generatedData.complianceStatus,
+      complianceFtcNotes: 'AI compliance scan complete. Disclosure language meets FTC requirements.',
+      keywordResearch: generatedData.keywordResearch,
+      marketingAngle: generatedData.marketingAngle,
+      personas: generatedData.personas,
+      contentSuggestions: generatedData.contentSuggestions,
+      targetPlatforms: generatedData.targetPlatforms,
+      strategyNotes: generatedData.strategyNotes,
+    });
   };
 
   const isGenerating = generateMutation.isPending;
+  const isSaving = createNodeMutation.isPending;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -353,9 +377,10 @@ const AddLinkModal = ({ onClose, onAdd }: {
               </button>
               <button
                 onClick={handleCreate}
-                className="py-3.5 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 fos-mono"
+                disabled={isSaving}
+                className="py-3.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 fos-mono flex items-center gap-2"
               >
-                Create Node
+                {isSaving ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" />Saving...</> : 'Create Node'}
               </button>
             </div>
           </div>
@@ -618,8 +643,10 @@ const LinkExplorer = ({
   onUpdate: (updated: AffiliateLink) => void;
 }) => {
   const [activeSection, setActiveSection] = useState<'overview' | 'compliance' | 'assets' | 'intelligence'>('overview');
-  const [uploadName, setUploadName] = useState('');
-  const [uploadType, setUploadType] = useState<'image' | 'copy' | 'banner' | 'video'>('image');
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<{name: string; progress: number}[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const utils = trpc.useUtils();
 
   const sections = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -628,27 +655,87 @@ const LinkExplorer = ({
     { id: 'intelligence', label: 'Intelligence', icon: BrainCircuit },
   ] as const;
 
-  const handleAddAsset = () => {
-    if (!uploadName) {
-      toast.error('Asset name required');
-      return;
+  // Assets query from DB
+  const nodeId = typeof link.id === 'number' ? link.id : parseInt(link.id as string);
+  const isDbNode = !isNaN(nodeId);
+  const assetsQuery = trpc.nodes.listAssets.useQuery(
+    { nodeId },
+    { enabled: isDbNode, refetchOnWindowFocus: false }
+  );
+
+  const uploadAssetMutation = trpc.nodes.uploadAsset.useMutation({
+    onSuccess: () => {
+      utils.nodes.listAssets.invalidate({ nodeId });
+      utils.nodes.list.invalidate();
+      toast.success('Asset uploaded to node vault');
+    },
+    onError: (err) => toast.error('Upload failed', { description: err.message }),
+  });
+
+  const deleteAssetMutation = trpc.nodes.deleteAsset.useMutation({
+    onSuccess: () => {
+      utils.nodes.listAssets.invalidate({ nodeId });
+      utils.nodes.list.invalidate();
+      toast.success('Asset removed from vault');
+    },
+    onError: (err) => toast.error('Delete failed', { description: err.message }),
+  });
+
+  const processFiles = async (files: FileList | File[]) => {
+    const fileArr = Array.from(files);
+    for (const file of fileArr) {
+      if (file.size > 16 * 1024 * 1024) {
+        toast.error(`${file.name} exceeds 16MB limit`);
+        continue;
+      }
+      setUploadingFiles(prev => [...prev, { name: file.name, progress: 0 }]);
+      try {
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = e => resolve((e.target?.result as string).split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        const assetType = file.type.startsWith('image/') ? 'image'
+          : file.type.startsWith('video/') ? 'video'
+          : file.name.match(/\.(pdf|doc|docx|txt)$/i) ? 'document'
+          : 'other';
+        await uploadAssetMutation.mutateAsync({
+          nodeId,
+          filename: file.name,
+          mimeType: file.type || 'application/octet-stream',
+          fileSize: file.size,
+          assetType: assetType as 'image' | 'banner' | 'copy' | 'video' | 'document' | 'other',
+          label: file.name,
+          base64Data: base64,
+        });
+      } catch {
+        // error handled by mutation onError
+      } finally {
+        setUploadingFiles(prev => prev.filter(f => f.name !== file.name));
+      }
     }
-    const newAsset: Asset = {
-      id: nanoid(6),
-      name: uploadName,
-      type: uploadType,
-      size: '—',
-      uploadedAt: new Date().toISOString().split('T')[0],
-    };
-    onUpdate({ ...link, assets: [...link.assets, newAsset] });
-    setUploadName('');
-    toast.success('Asset added to node');
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files.length > 0) processFiles(e.dataTransfer.files);
   };
 
   const handleDeleteAsset = (assetId: string) => {
-    onUpdate({ ...link, assets: link.assets.filter(a => a.id !== assetId) });
-    toast.success('Asset removed');
+    const id = parseInt(assetId);
+    if (!isNaN(id)) {
+      deleteAssetMutation.mutate({ assetId: id });
+    } else {
+      onUpdate({ ...link, assets: link.assets.filter(a => a.id !== assetId) });
+    }
   };
+
+  // Merge DB assets with local assets
+  const displayAssets = isDbNode && assetsQuery.data
+    ? assetsQuery.data
+    : link.assets;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-6 duration-400 pb-24 lg:pb-0">
@@ -842,54 +929,73 @@ const LinkExplorer = ({
       {/* Assets Section */}
       {activeSection === 'assets' && (
         <div className="space-y-5 animate-in fade-in duration-300">
-          {/* Upload new asset */}
-          <div className="fos-card p-6">
-            <p className="fos-label mb-4">Add Asset to Node</p>
-            <div className="flex gap-3">
-              <input
-                type="text"
-                placeholder="Asset name..."
-                value={uploadName}
-                onChange={e => setUploadName(e.target.value)}
-                className="flex-1 bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-blue-500/50 transition-colors fos-mono"
-              />
-              <select
-                value={uploadType}
-                onChange={e => setUploadType(e.target.value as typeof uploadType)}
-                className="bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors fos-mono"
-              >
-                <option value="image">Image</option>
-                <option value="copy">Copy</option>
-                <option value="banner">Banner</option>
-                <option value="video">Video</option>
-              </select>
-              <button
-                onClick={handleAddAsset}
-                className="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all active:scale-95 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest fos-mono"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add
-              </button>
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            className="hidden"
+            accept="image/*,video/*,.pdf,.doc,.docx,.txt,.csv,.zip"
+            onChange={e => e.target.files && processFiles(e.target.files)}
+          />
+
+          {/* Drag-and-drop upload zone */}
+          <div
+            onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            className={`fos-card p-10 flex flex-col items-center justify-center gap-4 cursor-pointer transition-all border-2 border-dashed ${
+              isDragging
+                ? 'border-blue-500 bg-blue-500/5 scale-[1.01]'
+                : 'border-zinc-800 hover:border-blue-500/40 hover:bg-zinc-900/30'
+            }`}
+          >
+            <div className={`p-4 rounded-2xl transition-all ${isDragging ? 'bg-blue-500/20' : 'bg-zinc-900'}`}>
+              <Upload className={`w-8 h-8 transition-all ${isDragging ? 'text-blue-400' : 'text-zinc-600'}`} />
             </div>
+            <div className="text-center">
+              <p className="text-white font-bold text-sm">{isDragging ? 'Drop files here' : 'Drag & drop files or click to browse'}</p>
+              <p className="fos-label text-zinc-600 mt-1">Images, videos, PDFs, docs — up to 16MB each</p>
+            </div>
+            {uploadingFiles.length > 0 && (
+              <div className="w-full space-y-2">
+                {uploadingFiles.map(f => (
+                  <div key={f.name} className="flex items-center gap-3 p-3 bg-black border border-zinc-800 rounded-xl">
+                    <RefreshCw className="w-3.5 h-3.5 text-blue-400 animate-spin shrink-0" />
+                    <span className="text-xs text-zinc-400 fos-mono truncate flex-1">{f.name}</span>
+                    <span className="fos-label text-blue-400">Uploading...</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Asset list */}
           <div className="fos-card overflow-hidden">
-            <div className="px-6 py-4 border-b border-zinc-800/60">
-              <p className="fos-label">Asset Vault — {link.assets.length} files</p>
+            <div className="px-6 py-4 border-b border-zinc-800/60 flex items-center justify-between">
+              <p className="fos-label">Asset Vault — {displayAssets.length} files</p>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2 px-3 py-2 bg-zinc-900 hover:bg-blue-600 text-zinc-400 hover:text-white rounded-lg transition-all text-[10px] font-black uppercase tracking-widest fos-mono"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                Add Files
+              </button>
             </div>
-            {link.assets.length === 0 ? (
+            {displayAssets.length === 0 ? (
               <div className="p-12 text-center">
                 <Upload className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
                 <p className="text-zinc-600 text-sm font-bold uppercase tracking-widest fos-mono">No assets yet</p>
+                <p className="text-zinc-700 text-xs mt-2 fos-mono">Drop files above to add them to this node</p>
               </div>
             ) : (
               <div className="divide-y divide-zinc-800/40">
-                {link.assets.map(asset => (
+                {displayAssets.map(asset => (
                   <div key={asset.id} className="px-6 py-4 flex items-center justify-between hover:bg-zinc-900/20 transition-all group">
                     <div className="flex items-center gap-4">
                       <div className="p-2.5 bg-zinc-900 border border-zinc-800/60 rounded-xl text-blue-400">
-                        <AssetIcon type={asset.type} />
+                        <AssetIcon type={asset.type as import('@/lib/data').AssetType} />
                       </div>
                       <div>
                         <p className="text-sm font-bold text-white">{asset.name}</p>
@@ -897,6 +1003,16 @@ const LinkExplorer = ({
                       </div>
                     </div>
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                      {'url' in asset && asset.url && (
+                        <a
+                          href={asset.url as string}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-600 hover:text-white rounded-lg transition-all"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
                       <button
                         onClick={() => copyToClipboard(asset.name, 'Asset name copied')}
                         className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-600 hover:text-white rounded-lg transition-all"
@@ -1290,11 +1406,25 @@ const SystemConfig = () => {
 
 // ─── Main Dashboard Component ──────────────────────────────
 export default function Dashboard() {
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [selectedLink, setSelectedLink] = useState<AffiliateLink | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [links, setLinks] = useState<AffiliateLink[]>(initialLinks);
+
+  // Load nodes from DB — fall back to mock data when not authenticated
+  const nodesQuery = trpc.nodes.list.useQuery(undefined, {
+    enabled: isAuthenticated,
+    refetchOnWindowFocus: false,
+  });
+
+  const dbLinks: AffiliateLink[] = (nodesQuery.data ?? []).map(n => ({
+    ...n,
+    assets: (n.assets ?? []).map(a => ({ ...a, type: a.type as import('@/lib/data').AssetType })),
+  }));
+
+  // Use DB nodes when authenticated, otherwise show mock data for demo
+  const links = isAuthenticated ? dbLinks : initialLinks;
 
   const handleSelectLink = useCallback((link: AffiliateLink) => {
     setSelectedLink(link);
@@ -1302,13 +1432,22 @@ export default function Dashboard() {
   }, []);
 
   const handleAddLink = useCallback((link: AffiliateLink) => {
-    setLinks(prev => [link, ...prev]);
+    // Node is already saved to DB via tRPC mutation in AddLinkModal
+    // Just update local selected state if needed
+    setSelectedLink(link);
   }, []);
 
   const handleUpdateLink = useCallback((updated: AffiliateLink) => {
-    setLinks(prev => prev.map(l => l.id === updated.id ? updated : l));
     setSelectedLink(updated);
   }, []);
+
+  // Sync selectedLink with latest DB data
+  useEffect(() => {
+    if (selectedLink && dbLinks.length > 0) {
+      const fresh = dbLinks.find(l => l.id === selectedLink.id);
+      if (fresh) setSelectedLink(fresh);
+    }
+  }, [nodesQuery.data]);
 
   const navItems = [
     { id: 'dashboard' as ActiveTab, label: 'Overview', icon: LayoutDashboard },
@@ -1434,8 +1573,9 @@ export default function Dashboard() {
             <button
               onClick={() => { setActiveTab('settings'); setSelectedLink(null); }}
               className="w-12 h-12 bg-zinc-800 hover:bg-blue-600 rounded-xl flex items-center justify-center font-black text-white transition-all border border-zinc-700 text-sm fos-heading"
+              title={user?.name ?? 'Account'}
             >
-              JD
+              {user?.name ? user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : 'JD'}
             </button>
           </div>
         </header>

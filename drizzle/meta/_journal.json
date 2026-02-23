@@ -8,6 +8,13 @@
       "when": 1771819523362,
       "tag": "0000_sparkling_ultimo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1771820694985,
+      "tag": "0001_premium_jane_foster",
+      "breakpoints": true
     }
   ]
 }
