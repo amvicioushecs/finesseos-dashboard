@@ -232,7 +232,7 @@ export default function Landing() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16" style={{background: 'linear-gradient(to right, #1f2b2e, #25253c, #0a0a0f)'}}>
         {/* Background effects */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[120px]" />
@@ -244,7 +244,7 @@ export default function Landing() {
           }} />
         </div>
 
-        <div className="relative max-w-5xl mx-auto px-6 text-center" style={{background: 'linear-gradient(to right, #1f2b2e, #25253c, #0a0a0f)'}}>
+        <div className="relative max-w-5xl mx-auto px-6 text-center">
           {/* Official Logo */}
           <div className="flex justify-center mb-8">
             <img

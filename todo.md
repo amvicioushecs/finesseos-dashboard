@@ -73,3 +73,4 @@
 - [x] Display live click counts on Vault cards and Overview stats
 - [x] Wire Sign In navbar link to getLoginUrl() on landing page
 - [x] Brighten all body text throughout landing page for legibility
+- [x] Fix hero gradient to extend full-width edge-to-edge
