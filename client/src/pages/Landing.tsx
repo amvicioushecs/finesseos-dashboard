@@ -265,7 +265,7 @@ export default function Landing() {
           </div>
 
           {/* Main headline */}
-          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-white tracking-tighter leading-[0.9] mb-8" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <h1 className="font-black text-white tracking-tighter leading-[0.9] mb-8 text-[64px]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             You paste an affiliate link.
             <br />
             <span className="text-blue-400">We build your whole campaign.</span>
@@ -316,7 +316,7 @@ export default function Landing() {
       <section className="py-24 px-6 border-t border-zinc-800">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>The Problem</p>
+            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 text-[35px]" style={{ fontFamily: "'Inter', sans-serif" }}>The Problem</p>
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Affiliate marketing is hard work.<br />It doesn't have to be.
             </h2>
@@ -371,7 +371,7 @@ export default function Landing() {
       <section id="how-it-works" className="py-24 px-6 border-t border-zinc-800">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>How It Works</p>
+            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 text-[35px]" style={{ fontFamily: "'Inter', sans-serif" }}>How It Works</p>
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Three steps. That's it.
             </h2>
@@ -404,7 +404,7 @@ export default function Landing() {
       <section id="features" className="py-24 px-6 border-t border-zinc-800">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>Features</p>
+            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 text-[35px]" style={{ fontFamily: "'Inter', sans-serif" }}>Features</p>
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Everything you need to win.
             </h2>
@@ -467,7 +467,7 @@ export default function Landing() {
       {/* ── Social Proof ── */}
       <section className="py-24 px-6 border-t border-zinc-800">
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>What You Get Per Campaign</p>
+          <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 text-[35px]" style={{ fontFamily: "'Inter', sans-serif" }}>What You Get Per Campaign</p>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-16" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Every link. Fully loaded.</h2>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
@@ -493,7 +493,7 @@ export default function Landing() {
       <section id="pricing" className="py-24 px-6 border-t border-zinc-800">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>Pricing</p>
+            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 text-[35px]" style={{ fontFamily: "'Inter', sans-serif" }}>Pricing</p>
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Start free. Upgrade when you're ready.</h2>
             <p className="text-zinc-200 text-base mt-4 font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>No credit card required to get started.</p>
           </div>

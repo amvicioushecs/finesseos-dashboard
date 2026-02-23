@@ -80,3 +80,4 @@
 - [x] Generate sitemap.xml and robots.txt for Google Search Console
 - [x] Lighten backgrounds throughout landing page and dashboard for better readability
 - [x] Increase text sizes and contrast across all pages
+- [x] Apply visual editor font size changes: section labels to 35px, hero H1 capped at 64px
