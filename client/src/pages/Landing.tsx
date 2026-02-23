@@ -383,7 +383,7 @@ export default function Landing() {
                 <div className={cn(
                   'text-[10px] font-mono font-black mb-3',
                   item.highlight ? 'text-blue-400' : 'text-zinc-700'
-                )}>
+                )} style={{color: '#50a2ff'}}>
                   {item.icon}
                 </div>
                 <p className={cn('text-sm leading-relaxed font-medium', item.highlight ? 'text-zinc-200' : 'text-zinc-300')} style={{ fontFamily: "'Inter', sans-serif" }}>
