@@ -55,6 +55,14 @@ export interface AffiliateLink {
   intelligence: Intelligence;
   createdAt: string;
   category?: string;
+  // Brand assets from Brandfetch
+  brandLogoUrl?: string | null;
+  brandIconUrl?: string | null;
+  brandPrimaryColor?: string | null;
+  brandColors?: string[];
+  brandDescription?: string | null;
+  brandIndustry?: string | null;
+  brandDomain?: string | null;
 }
 
 export const initialLinks: AffiliateLink[] = [

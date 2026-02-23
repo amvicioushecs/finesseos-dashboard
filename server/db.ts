@@ -84,6 +84,14 @@ export type FrontendNode = {
   earnings: string;
   commission: string;
   createdAt: string;
+  // Brand assets from Brandfetch
+  brandLogoUrl: string | null;
+  brandIconUrl: string | null;
+  brandPrimaryColor: string | null;
+  brandColors: string[];
+  brandDescription: string | null;
+  brandIndustry: string | null;
+  brandDomain: string | null;
   compliance: {
     disclosure: string;
     rules: string[];
@@ -130,6 +138,13 @@ export function nodeRowToFrontend(row: typeof affiliateNodes.$inferSelect, asset
       targetPlatforms: parseJson<string[]>(row.targetPlatformsJson, []),
       strategyNotes: row.strategyNotes ?? '',
     },
+    brandLogoUrl: row.brandLogoUrl ?? null,
+    brandIconUrl: row.brandIconUrl ?? null,
+    brandPrimaryColor: row.brandPrimaryColor ?? null,
+    brandColors: parseJson<string[]>(row.brandColorsJson, []),
+    brandDescription: row.brandDescription ?? null,
+    brandIndustry: row.brandIndustry ?? null,
+    brandDomain: row.brandDomain ?? null,
     assets: assets.map(a => ({
       id: String(a.id),
       name: a.originalName,
@@ -181,6 +196,9 @@ export async function createNode(userId: number, data: {
   complianceFtcNotes: string; keywordResearch: string[]; marketingAngle: string;
   personas: Array<{ name: string; pain: string; hook: string; platform: string }>;
   contentSuggestions: string[]; targetPlatforms: string[]; strategyNotes: string;
+  // Brand assets
+  brandLogoUrl?: string | null; brandIconUrl?: string | null; brandPrimaryColor?: string | null;
+  brandColors?: string[]; brandDescription?: string | null; brandIndustry?: string | null; brandDomain?: string | null;
 }): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -206,6 +224,13 @@ export async function createNode(userId: number, data: {
     contentSuggestionsJson: toJson(data.contentSuggestions),
     targetPlatformsJson: toJson(data.targetPlatforms),
     strategyNotes: data.strategyNotes,
+    brandLogoUrl: data.brandLogoUrl ?? null,
+    brandIconUrl: data.brandIconUrl ?? null,
+    brandPrimaryColor: data.brandPrimaryColor ?? null,
+    brandColorsJson: toJson(data.brandColors ?? []),
+    brandDescription: data.brandDescription ?? null,
+    brandIndustry: data.brandIndustry ?? null,
+    brandDomain: data.brandDomain ?? null,
   };
 
   const [result] = await db.insert(affiliateNodes).values(insert);

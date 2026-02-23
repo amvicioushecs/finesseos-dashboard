@@ -66,6 +66,14 @@ export const nodesRouter = router({
         contentSuggestions: z.array(z.string()).default([]),
         targetPlatforms: z.array(z.string()).default([]),
         strategyNotes: z.string().default(""),
+        // Brand assets from Brandfetch
+        brandLogoUrl: z.string().nullable().default(null),
+        brandIconUrl: z.string().nullable().default(null),
+        brandPrimaryColor: z.string().nullable().default(null),
+        brandColors: z.array(z.string()).default([]),
+        brandDescription: z.string().nullable().default(null),
+        brandIndustry: z.string().nullable().default(null),
+        brandDomain: z.string().nullable().default(null),
       })
     )
     .mutation(async ({ ctx, input }) => {

@@ -5,6 +5,7 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { invokeLLM } from "../_core/llm";
+import { fetchBrandData, extractDomain } from "../brandfetch";
 
 // ─── Response Schema ────────────────────────────────────────────────────────
 
@@ -48,12 +49,12 @@ export const affiliateRouter = router({
       const { url, programName } = input;
 
       // Extract domain for context
-      let domain = "";
-      try {
-        domain = new URL(url).hostname.replace("www.", "");
-      } catch {
-        domain = url;
-      }
+      const domain = extractDomain(url);
+
+      // Run Brandfetch lookup and AI generation in parallel for speed
+      const [brandData, llmResponse] = await Promise.allSettled([
+        fetchBrandData(domain),
+        (async () => {
 
       const systemPrompt = `You are FinesseOS Intelligence Engine — an elite AI research system for affiliate marketers.
 Your job is to analyze an affiliate program URL and generate a comprehensive intelligence package that tells the marketer exactly how to make money with that offer.
@@ -83,7 +84,7 @@ Generate the intelligence package with:
 
 Be specific to the actual program. If it's Shopify, talk about e-commerce. If it's ClickFunnels, talk about funnels. If it's Amazon, talk about product reviews.`;
 
-      const response = await invokeLLM({
+      return await invokeLLM({
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
@@ -150,7 +151,18 @@ Be specific to the actual program. If it's Shopify, talk about e-commerce. If it
         },
       });
 
-      const content = response.choices?.[0]?.message?.content;
+        })(),
+      ]);
+
+      const brand = brandData.status === "fulfilled" ? brandData.value : null;
+      const llmResult = llmResponse.status === "fulfilled" ? llmResponse.value : null;
+
+      if (!llmResult) {
+        const err = llmResponse.status === "rejected" ? llmResponse.reason : new Error("AI generation failed");
+        throw err;
+      }
+
+      const content = llmResult.choices?.[0]?.message?.content;
       if (!content) {
         throw new Error("AI returned empty response. Please try again.");
       }
@@ -164,6 +176,20 @@ Be specific to the actual program. If it's Shopify, talk about e-commerce. If it
 
       // Validate with zod
       const validated = IntelligenceSchema.parse(parsed);
-      return validated;
+
+      // Merge Brandfetch brand data into the result
+      return {
+        ...validated,
+        // Override brandName with official name if Brandfetch found it
+        brandName: brand?.name ?? validated.brandName,
+        // Brand assets from Brandfetch
+        brandLogoUrl: brand?.logoUrl ?? null,
+        brandIconUrl: brand?.iconUrl ?? null,
+        brandPrimaryColor: brand?.primaryColor ?? null,
+        brandColors: brand?.colors ?? [],
+        brandDescription: brand?.description ?? null,
+        brandIndustry: brand?.industry ?? validated.category,
+        brandDomain: domain,
+      };
     }),
 });

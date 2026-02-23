@@ -48,6 +48,14 @@ export const affiliateNodes = mysqlTable("affiliateNodes", {
   contentSuggestionsJson: text("contentSuggestionsJson"), // JSON array of strings
   targetPlatformsJson: text("targetPlatformsJson"), // JSON array of strings
   strategyNotes: text("strategyNotes"),
+  // Brand assets from Brandfetch
+  brandLogoUrl: text("brandLogoUrl"),
+  brandIconUrl: text("brandIconUrl"),
+  brandPrimaryColor: varchar("brandPrimaryColor", { length: 16 }),
+  brandColorsJson: text("brandColorsJson"), // JSON array of hex color strings
+  brandDescription: text("brandDescription"),
+  brandIndustry: varchar("brandIndustry", { length: 128 }),
+  brandDomain: varchar("brandDomain", { length: 255 }),
   // Timestamps
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

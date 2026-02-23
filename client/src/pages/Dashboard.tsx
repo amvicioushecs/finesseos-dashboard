@@ -161,6 +161,9 @@ const AddLinkModal = ({ onClose, onAdd }: {
     personas: { name: string; pain: string; hook: string; platform: string }[];
     contentSuggestions: string[]; targetPlatforms: string[]; strategyNotes: string;
     disclosure: string; complianceRules: string[]; complianceStatus: 'passed' | 'warning' | 'failed';
+    // Brand assets from Brandfetch
+    brandLogoUrl?: string | null; brandIconUrl?: string | null; brandPrimaryColor?: string | null;
+    brandColors?: string[]; brandDescription?: string | null; brandIndustry?: string | null; brandDomain?: string | null;
   }>(null);
 
   const utils = trpc.useUtils();
@@ -184,6 +187,13 @@ const AddLinkModal = ({ onClose, onAdd }: {
           compliance: node.compliance,
           assets: (node.assets ?? []).map(a => ({ ...a, type: a.type as import('@/lib/data').AssetType })),
           intelligence: node.intelligence,
+          brandLogoUrl: node.brandLogoUrl,
+          brandIconUrl: node.brandIconUrl,
+          brandPrimaryColor: node.brandPrimaryColor,
+          brandColors: node.brandColors,
+          brandDescription: node.brandDescription,
+          brandIndustry: node.brandIndustry,
+          brandDomain: node.brandDomain,
         });
       }
       toast.success('Node Created', { description: `${node?.brandName} affiliate node is now live in your vault.` });
@@ -238,6 +248,13 @@ const AddLinkModal = ({ onClose, onAdd }: {
       contentSuggestions: generatedData.contentSuggestions,
       targetPlatforms: generatedData.targetPlatforms,
       strategyNotes: generatedData.strategyNotes,
+      brandLogoUrl: generatedData.brandLogoUrl ?? null,
+      brandIconUrl: generatedData.brandIconUrl ?? null,
+      brandPrimaryColor: generatedData.brandPrimaryColor ?? null,
+      brandColors: generatedData.brandColors ?? [],
+      brandDescription: generatedData.brandDescription ?? null,
+      brandIndustry: generatedData.brandIndustry ?? null,
+      brandDomain: generatedData.brandDomain ?? null,
     });
   };
 
@@ -587,14 +604,49 @@ const CampaignVault = ({
               )}
 
               <div className="mb-6">
-                <div className="flex items-center gap-2 fos-label text-blue-500 mb-2">
-                  <Fingerprint className="w-3 h-3" />
-                  {link.platform} · {link.category}
+                {/* Brand logo + identity */}
+                <div className="flex items-center gap-3 mb-4">
+                  {link.brandLogoUrl ? (
+                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-white/5 border border-zinc-800 flex items-center justify-center flex-shrink-0">
+                      <img
+                        src={link.brandLogoUrl}
+                        alt={link.brandName}
+                        className="w-full h-full object-contain p-1"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    </div>
+                  ) : link.brandIconUrl ? (
+                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-white/5 border border-zinc-800 flex items-center justify-center flex-shrink-0">
+                      <img
+                        src={link.brandIconUrl}
+                        alt={link.brandName}
+                        className="w-8 h-8 object-contain"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className="w-10 h-10 rounded-xl border border-zinc-800 flex items-center justify-center flex-shrink-0 text-sm font-black text-white"
+                      style={{ background: link.brandPrimaryColor ? `${link.brandPrimaryColor}22` : 'rgba(59,130,246,0.1)', borderColor: link.brandPrimaryColor ? `${link.brandPrimaryColor}44` : undefined }}
+                    >
+                      {link.brandName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <h3 className="text-base font-black text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight fos-heading truncate">
+                      {link.brandName}
+                    </h3>
+                    <div className="flex items-center gap-1.5 fos-label text-zinc-500 mt-0.5">
+                      <Fingerprint className="w-2.5 h-2.5" />
+                      <span className="truncate">{link.platform} · {link.category}</span>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-xl font-black text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight fos-heading truncate">
-                  {link.slug}
-                </h3>
-                <p className="fos-label text-zinc-600 mt-2 italic">{link.brandName}</p>
+                {/* Brand color accent bar */}
+                {link.brandPrimaryColor && (
+                  <div className="h-0.5 rounded-full mb-3 opacity-60" style={{ background: `linear-gradient(90deg, ${link.brandPrimaryColor}, transparent)` }} />
+                )}
+                <p className="fos-label text-zinc-600 font-mono text-[9px] truncate">{link.slug}</p>
               </div>
 
               <div className="grid grid-cols-3 gap-2 mb-6">
