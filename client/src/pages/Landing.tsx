@@ -283,8 +283,8 @@ export default function Landing() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <a
               href={loginUrl}
-              className="flex items-center gap-3 px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl transition-all active:scale-95 text-base"
-              style={{ fontFamily: "'Inter', sans-serif", boxShadow: '0 0 60px rgba(37,99,235,0.4), 0 4px 20px rgba(0,0,0,0.4)' }}
+              className="flex items-center gap-3 px-10 py-4 text-white font-black rounded-2xl transition-all active:scale-95 text-base hover:brightness-110"
+              style={{ fontFamily: "'Inter', sans-serif", background: 'linear-gradient(135deg, #7c3aed 0%, #2563eb 50%, #06b6d4 100%)', boxShadow: '0 0 60px rgba(124,58,237,0.4), 0 4px 20px rgba(0,0,0,0.4)' }}
             >
               <Zap className="w-5 h-5 fill-white" />
               Start Free — Paste Your First Link
