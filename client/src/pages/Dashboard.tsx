@@ -1655,16 +1655,20 @@ export default function Dashboard() {
       {/* ── Sidebar ── */}
       <aside className="fixed left-0 top-0 bottom-0 w-72 bg-zinc-950 border-r border-zinc-900 hidden md:flex flex-col z-50" style={{ backgroundImage: 'radial-gradient(ellipse 120% 60% at 0% 0%, rgba(37,99,235,0.08) 0%, transparent 70%)' }}>
         {/* Logo */}
-        <div className="p-8 pb-0">
-          <div className="flex items-center gap-4 group cursor-default">
-            <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center fos-glow-blue transition-all group-hover:scale-105 shrink-0">
-              <Zap className="w-6 h-6 text-white fill-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black text-white tracking-tighter leading-none fos-heading">FinesseOS</h1>
-              <p className="fos-label text-zinc-700 mt-2 italic">Inevitable_Action_Layer</p>
-            </div>
+        <div className="p-6 pb-0">
+          <div className="flex items-center gap-3 group cursor-default">
+            <img
+              src="https://files.manuscdn.com/user_upload_by_module/session_file/94821429/gUEtbVDJTcocGKPG.png"
+              alt="FinesseOS"
+              className="w-auto transition-all group-hover:scale-105"
+              style={{
+                height: '38px',
+                mixBlendMode: 'screen',
+                filter: 'drop-shadow(0 0 12px rgba(96,165,250,0.6)) drop-shadow(0 0 24px rgba(139,92,246,0.3)) brightness(1.15) contrast(1.05)',
+              }}
+            />
           </div>
+          <p className="fos-label text-zinc-700 mt-3 italic pl-1">Inevitable_Action_Layer</p>
         </div>
 
         {/* Nav */}
