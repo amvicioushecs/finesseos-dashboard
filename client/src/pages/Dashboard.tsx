@@ -1568,7 +1568,7 @@ const SystemConfig = () => {
 
 // ─── Main Dashboard Component ──────────────────────────────
 export default function Dashboard() {
-  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth({ redirectOnUnauthenticated: true });
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [selectedLink, setSelectedLink] = useState<AffiliateLink | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -1640,6 +1640,31 @@ export default function Dashboard() {
     if (activeTab === 'settings') return 'Config';
     return 'Overview';
   };
+
+  // Show a minimal loading screen while auth check is in progress
+  // The useAuth hook will redirect to login if user is not authenticated
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="flex flex-col items-center gap-6">
+          <img
+            src="https://files.manuscdn.com/user_upload_by_module/session_file/94821429/gUEtbVDJTcocGKPG.png"
+            alt="FinesseOS"
+            className="w-auto animate-pulse"
+            style={{
+              height: '48px',
+              mixBlendMode: 'screen',
+              filter: 'drop-shadow(0 0 20px rgba(96,165,250,0.7)) drop-shadow(0 0 40px rgba(139,92,246,0.4)) brightness(1.2)',
+            }}
+          />
+          <div className="flex items-center gap-2 text-zinc-600 text-xs font-mono tracking-[0.3em] uppercase">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" />
+            Authenticating...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-zinc-300 selection:bg-blue-500/30 selection:text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>

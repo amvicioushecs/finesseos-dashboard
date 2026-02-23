@@ -65,3 +65,4 @@
 - [x] Add delete button to each Vault card with confirmation dialog
 - [x] Wire delete to tRPC nodes.delete mutation (removes node + all assets from DB)
 - [x] Replace sidebar bolt icon with official FinesseOS logo (~32px)
+- [x] Auth gate /dashboard — redirect unauthenticated users to login
