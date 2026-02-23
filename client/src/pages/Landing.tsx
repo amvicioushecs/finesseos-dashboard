@@ -246,9 +246,9 @@ export default function Landing() {
               alt="FinesseOS"
               className="w-auto"
               style={{
-                height: '180px',
+                height: '430px',
                 mixBlendMode: 'screen',
-                filter: 'drop-shadow(0 0 60px rgba(96,165,250,0.5)) drop-shadow(0 0 120px rgba(139,92,246,0.3)) brightness(1.1) contrast(1.05)',
+                filter: 'drop-shadow(0 0 60px rgba(96,165,250,0.5)) drop-shadow(0 0 120px rgba(139,92,246,0.3)) brightness(1.1) contrast(1.05)', marginBottom: '-110px', width: '452px', height: '430px',
               }}
             />
           </div>
