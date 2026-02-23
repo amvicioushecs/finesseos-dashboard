@@ -248,7 +248,9 @@ export default function Landing() {
               style={{
                 height: '430px',
                 mixBlendMode: 'screen',
-                filter: 'drop-shadow(0 0 60px rgba(96,165,250,0.5)) drop-shadow(0 0 120px rgba(139,92,246,0.3)) brightness(1.1) contrast(1.05)', marginBottom: '-110px', width: '452px', height: '430px',
+                filter: 'drop-shadow(0 0 60px rgba(96,165,250,0.5)) drop-shadow(0 0 120px rgba(139,92,246,0.3)) brightness(1.1) contrast(1.05)',
+                marginBottom: '-110px',
+                width: '452px',
               }}
             />
           </div>
