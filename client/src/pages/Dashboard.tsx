@@ -5,6 +5,16 @@
 // ============================================================
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useAuth } from '@/_core/hooks/useAuth';
 import { getLoginUrl } from '@/const';
 import { trpc } from '@/lib/trpc';
@@ -557,12 +567,15 @@ const CampaignVault = ({
   searchQuery,
   onSelectLink,
   onAddLink,
+  onDeleteLink,
 }: {
   links: AffiliateLink[];
   searchQuery: string;
   onSelectLink: (link: AffiliateLink) => void;
   onAddLink: () => void;
+  onDeleteLink: (link: AffiliateLink) => void;
 }) => {
+  const [pendingDelete, setPendingDelete] = useState<AffiliateLink | null>(null);
   const filtered = links.filter(l =>
     l.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
     l.brandName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -597,8 +610,17 @@ const CampaignVault = ({
               key={link.id}
               className="fos-card fos-node-card p-7 group hover:border-blue-500/40 transition-all shadow-2xl"
             >
+              {/* Delete button — top-right corner, visible on hover */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setPendingDelete(link); }}
+                className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-700 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all z-10"
+                title="Delete node"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+
               {link.status === 'alert' && (
-                <div className="absolute top-5 right-5">
+                <div className="absolute top-5 right-12">
                   <AlertCircle className="w-4 h-4 text-rose-500 animate-pulse" />
                 </div>
               )}
@@ -680,6 +702,39 @@ const CampaignVault = ({
           ))}
         </div>
       )}
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!pendingDelete} onOpenChange={(open) => { if (!open) setPendingDelete(null); }}>
+        <AlertDialogContent className="bg-zinc-950 border border-zinc-800 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white font-black text-xl fos-heading">
+              Delete Campaign Node?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400 text-sm leading-relaxed">
+              You are about to permanently delete{' '}
+              <span className="text-white font-bold">{pendingDelete?.brandName}</span>.
+              This will remove the node, all its intelligence data, and every uploaded asset.
+              <br /><br />
+              <span className="text-rose-400 font-semibold">This action cannot be undone.</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-3">
+            <AlertDialogCancel className="bg-zinc-900 border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-rose-600 hover:bg-rose-700 text-white font-black uppercase tracking-widest text-xs"
+              onClick={() => {
+                if (pendingDelete) {
+                  onDeleteLink(pendingDelete);
+                  setPendingDelete(null);
+                }
+              }}
+            >
+              Delete Node
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
@@ -1548,6 +1603,22 @@ export default function Dashboard() {
     setSelectedLink(updated);
   }, []);
 
+  const utils = trpc.useUtils();
+  const deleteNodeMutation = trpc.nodes.delete.useMutation({
+    onSuccess: () => {
+      utils.nodes.list.invalidate();
+      toast.success('Node deleted', { description: 'Campaign and all assets permanently removed.' });
+    },
+    onError: (err) => toast.error('Delete failed', { description: err.message }),
+  });
+
+  const handleDeleteLink = useCallback((link: AffiliateLink) => {
+    const nodeId = typeof link.id === 'number' ? link.id : parseInt(link.id as string);
+    if (!isNaN(nodeId)) {
+      deleteNodeMutation.mutate({ nodeId });
+    }
+  }, [deleteNodeMutation]);
+
   // Sync selectedLink with latest DB data
   useEffect(() => {
     if (selectedLink && dbLinks.length > 0) {
@@ -1695,6 +1766,7 @@ export default function Dashboard() {
             searchQuery={searchQuery}
             onSelectLink={handleSelectLink}
             onAddLink={() => setShowAddModal(true)}
+            onDeleteLink={handleDeleteLink}
           />
         )}
         {activeTab === 'vault' && selectedLink && (

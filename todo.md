@@ -62,3 +62,5 @@
 - [x] Store brandLogoUrl and brandColors in the affiliateNodes DB table
 - [x] Replace landing page navbar bolt icon with official FinesseOS logo (~40px)
 - [x] Show brand logo in node workspace header when entering a node
+- [x] Add delete button to each Vault card with confirmation dialog
+- [x] Wire delete to tRPC nodes.delete mutation (removes node + all assets from DB)
