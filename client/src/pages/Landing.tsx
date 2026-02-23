@@ -168,10 +168,7 @@ export default function Landing() {
     <div className="min-h-screen bg-black text-zinc-200" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
 
       {/* ── Navbar ── */}
-      <nav className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        scrolled ? 'bg-black/90 backdrop-blur-xl border-b border-zinc-800' : 'bg-transparent'
-      )}>
+      <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-zinc-800" style={{backgroundColor: '#1a1918'}}>
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo */}
           <a href="/" className="flex items-center group">
