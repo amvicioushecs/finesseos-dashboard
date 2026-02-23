@@ -239,6 +239,20 @@ export default function Landing() {
         </div>
 
         <div className="relative max-w-5xl mx-auto px-6 text-center">
+          {/* Official Logo */}
+          <div className="flex justify-center mb-8">
+            <img
+              src="https://files.manuscdn.com/user_upload_by_module/session_file/94821429/gUEtbVDJTcocGKPG.png"
+              alt="FinesseOS"
+              className="w-auto"
+              style={{
+                height: '180px',
+                mixBlendMode: 'screen',
+                filter: 'drop-shadow(0 0 60px rgba(96,165,250,0.5)) drop-shadow(0 0 120px rgba(139,92,246,0.3)) brightness(1.1) contrast(1.05)',
+              }}
+            />
+          </div>
+
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-full text-[11px] font-mono text-zinc-500 mb-8 hover:border-blue-500/30 transition-all">
             <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
