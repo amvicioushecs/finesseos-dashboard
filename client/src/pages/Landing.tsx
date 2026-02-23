@@ -175,12 +175,19 @@ export default function Landing() {
       )}>
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center transition-all group-hover:scale-110" style={{ boxShadow: '0 0 20px rgba(37,99,235,0.4)' }}>
-              <Zap className="w-4 h-4 text-white fill-white" />
-            </div>
-            <span className="text-white font-black tracking-tighter text-lg">FinesseOS</span>
-            <span className="text-zinc-700 font-mono text-xs">.pro</span>
+          <a href="/" className="flex items-center group">
+            <img
+              src="https://files.manuscdn.com/user_upload_by_module/session_file/94821429/gUEtbVDJTcocGKPG.png"
+              alt="FinesseOS"
+              style={{
+                height: '40px',
+                width: 'auto',
+                mixBlendMode: 'screen',
+                filter: 'drop-shadow(0 0 12px rgba(96,165,250,0.6)) brightness(1.15) contrast(1.05)',
+                transition: 'filter 0.2s',
+              }}
+              className="group-hover:brightness-125"
+            />
           </a>
 
           {/* Desktop Nav */}

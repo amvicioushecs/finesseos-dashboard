@@ -57,6 +57,8 @@
 - [x] Rewrite hero copy — clear who it's for, what it does, fifth-grade reading level
 - [x] Increase hero text size and brightness for legibility
 - [x] Upgrade hero font for impact and readability
-- [ ] Integrate Brandfetch API — auto-fetch brand logo, name, colors on link paste
-- [ ] Display brand logo on each campaign node card in The Vault
-- [ ] Store brandLogoUrl and brandColors in the affiliateNodes DB table
+- [x] Integrate Brandfetch API — auto-fetch brand logo, name, colors on link paste
+- [x] Display brand logo on each campaign node card in The Vault
+- [x] Store brandLogoUrl and brandColors in the affiliateNodes DB table
+- [x] Replace landing page navbar bolt icon with official FinesseOS logo (~40px)
+- [x] Show brand logo in node workspace header when entering a node

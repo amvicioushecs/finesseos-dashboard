@@ -796,15 +796,70 @@ const LinkExplorer = ({
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
-            className="p-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl active:scale-90 transition-all"
+            className="p-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl active:scale-90 transition-all shrink-0"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div>
-            <div className="fos-label text-blue-500 mb-1">{link.platform} · {link.category}</div>
-            <h2 className="text-3xl font-black text-white tracking-tighter fos-heading uppercase">{link.slug}</h2>
+
+          {/* Brand Identity Block */}
+          <div className="flex items-center gap-4">
+            {/* Brand Logo / Avatar */}
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden"
+              style={{
+                background: link.brandPrimaryColor
+                  ? `linear-gradient(135deg, ${link.brandPrimaryColor}22, ${link.brandPrimaryColor}08)`
+                  : 'linear-gradient(135deg, rgba(37,99,235,0.15), rgba(37,99,235,0.05))',
+                border: `1px solid ${link.brandPrimaryColor ? link.brandPrimaryColor + '44' : 'rgba(37,99,235,0.25)'}`,
+                boxShadow: link.brandPrimaryColor
+                  ? `0 0 24px ${link.brandPrimaryColor}22, inset 0 0 16px ${link.brandPrimaryColor}08`
+                  : '0 0 24px rgba(37,99,235,0.12)',
+              }}
+            >
+              {link.brandLogoUrl ? (
+                <img
+                  src={link.brandLogoUrl}
+                  alt={link.brandName}
+                  className="w-12 h-12 object-contain"
+                  onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              ) : link.brandIconUrl ? (
+                <img
+                  src={link.brandIconUrl}
+                  alt={link.brandName}
+                  className="w-10 h-10 object-contain"
+                  onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              ) : (
+                <span
+                  className="text-2xl font-black uppercase"
+                  style={{ color: link.brandPrimaryColor || '#3b82f6' }}
+                >
+                  {(link.brandName || link.slug).charAt(0)}
+                </span>
+              )}
+            </div>
+
+            {/* Brand Text */}
+            <div>
+              <div className="fos-label mb-0.5" style={{ color: link.brandPrimaryColor || undefined }}>
+                {link.platform} · {link.category}
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tighter fos-heading">
+                {link.brandName || link.slug}
+              </h2>
+              <div className="fos-mono text-zinc-600 text-[10px] mt-0.5 uppercase tracking-widest">{link.slug}</div>
+              {/* Brand color accent bar */}
+              {link.brandPrimaryColor && (
+                <div
+                  className="h-0.5 rounded-full mt-2 w-24 opacity-70"
+                  style={{ background: `linear-gradient(90deg, ${link.brandPrimaryColor}, transparent)` }}
+                />
+              )}
+            </div>
           </div>
         </div>
+
         <div className="flex items-center gap-3">
           <StatusBadge status={link.status} />
           <StatusBadge status={link.compliance.status} />
