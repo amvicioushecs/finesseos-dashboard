@@ -1,0 +1,7 @@
+# FinesseOS Pro — robots.txt
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /go/
+
+Sitemap: https://finesseos.pro/sitemap.xml

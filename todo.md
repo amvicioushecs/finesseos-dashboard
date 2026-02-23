@@ -77,3 +77,4 @@
 - [x] Add SEO meta tags to landing page (keywords, description, OG, Twitter Card, canonical, structured data)
 - [x] Generate and add favicon.ico and apple-touch-icon to the site
 - [x] Make landing page header clearly visible with solid dark full-width background
+- [x] Generate sitemap.xml and robots.txt for Google Search Console
