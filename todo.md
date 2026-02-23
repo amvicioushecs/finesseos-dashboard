@@ -74,3 +74,4 @@
 - [x] Wire Sign In navbar link to getLoginUrl() on landing page
 - [x] Brighten all body text throughout landing page for legibility
 - [x] Fix hero gradient to extend full-width edge-to-edge
+- [x] Add SEO meta tags to landing page (keywords, description, OG, Twitter Card, canonical, structured data)
