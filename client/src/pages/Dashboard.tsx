@@ -5,6 +5,7 @@
 // ============================================================
 
 import { useState, useCallback } from 'react';
+import { trpc } from '@/lib/trpc';
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -150,75 +151,78 @@ const AddLinkModal = ({ onClose, onAdd }: {
   onAdd: (link: AffiliateLink) => void;
 }) => {
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({
-    brandName: '',
-    destination: '',
-    platform: 'TikTok',
-    category: 'E-Commerce',
-    slug: '',
-  });
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [destination, setDestination] = useState('');
+  const [generatedData, setGeneratedData] = useState<null | {
+    brandName: string; category: string; platform: string; slug: string; commission: string;
+    keywordResearch: string[]; marketingAngle: string;
+    personas: { name: string; pain: string; hook: string; platform: string }[];
+    contentSuggestions: string[]; targetPlatforms: string[]; strategyNotes: string;
+    disclosure: string; complianceRules: string[]; complianceStatus: 'passed' | 'warning' | 'failed';
+  }>(null);
 
-  const platforms = ['TikTok', 'YouTube', 'Instagram', 'Email', 'LinkedIn', 'Pinterest', 'Twitter/X', 'Blog'];
-  const categories = ['E-Commerce', 'SaaS / Marketing', 'Tech & Gear', 'Finance', 'Health & Wellness', 'Education', 'Travel', 'Other'];
+  const generateMutation = trpc.affiliate.generateIntelligence.useMutation({
+    onSuccess: (data) => {
+      setGeneratedData(data);
+      setStep(2);
+    },
+    onError: (err) => {
+      toast.error('Intelligence Scan Failed', { description: err.message || 'Please try again.' });
+    },
+  });
 
   const handleGenerate = () => {
-    if (!form.brandName || !form.destination) {
-      toast.error('Missing fields', { description: 'Brand name and destination URL are required.' });
+    if (!destination) {
+      toast.error('Missing URL', { description: 'Paste your affiliate link to continue.' });
       return;
     }
-    setIsGenerating(true);
-    setTimeout(() => {
-      setIsGenerating(false);
-      setStep(2);
-    }, 2000);
+    try { new URL(destination); } catch {
+      toast.error('Invalid URL', { description: 'Please enter a valid URL starting with https://' });
+      return;
+    }
+    generateMutation.mutate({ url: destination });
   };
 
   const handleCreate = () => {
-    const slug = form.slug || `${form.brandName.toLowerCase().replace(/\s+/g, '-')}-${form.platform.toLowerCase()}`;
+    if (!generatedData) return;
     const newLink: AffiliateLink = {
       id: nanoid(6),
-      brandName: form.brandName,
-      slug,
-      platform: form.platform,
-      destination: form.destination,
+      brandName: generatedData.brandName,
+      slug: generatedData.slug,
+      platform: generatedData.platform,
+      destination,
       status: 'active',
       clicks: '0',
       earnings: '$0',
-      commission: 'TBD',
-      category: form.category,
+      commission: generatedData.commission,
+      category: generatedData.category,
       createdAt: new Date().toISOString().split('T')[0],
       compliance: {
-        disclosure: `AD: I earn a commission from ${form.brandName} at no extra cost to you.`,
-        rules: ['FTC disclosure required', 'No deceptive claims'],
-        status: 'passed',
+        disclosure: generatedData.disclosure,
+        rules: generatedData.complianceRules,
+        status: generatedData.complianceStatus,
         lastChecked: new Date().toISOString().split('T')[0],
         ftcNotes: 'AI compliance scan complete. Disclosure language meets FTC requirements.',
       },
       assets: [],
       intelligence: {
-        keywordResearch: [`${form.brandName.toLowerCase()} review`, `best ${form.category.toLowerCase()}`, `${form.brandName.toLowerCase()} tutorial`],
-        marketingAngle: `The "${form.brandName} Authority" Angle. Position yourself as the go-to expert for ${form.brandName} on ${form.platform}.`,
-        personas: [
-          { name: 'Early Adopter', pain: 'Looking for the best solution in the market', hook: `Why ${form.brandName} is the top choice`, platform: form.platform },
-        ],
-        contentSuggestions: [
-          `My honest ${form.brandName} review after 30 days`,
-          `${form.brandName} vs competitors — the real breakdown`,
-          `How I use ${form.brandName} to [achieve result]`,
-        ],
-        targetPlatforms: [form.platform + ' (Primary)'],
-        strategyNotes: `Node created via FinesseOS intelligence engine. AI research in progress.`,
+        keywordResearch: generatedData.keywordResearch,
+        marketingAngle: generatedData.marketingAngle,
+        personas: generatedData.personas,
+        contentSuggestions: generatedData.contentSuggestions,
+        targetPlatforms: generatedData.targetPlatforms,
+        strategyNotes: generatedData.strategyNotes,
       },
     };
     onAdd(newLink);
-    toast.success('Node Created', { description: `${form.brandName} affiliate node is now live.` });
+    toast.success('Node Created', { description: `${generatedData.brandName} affiliate node is now live in your vault.` });
     onClose();
   };
 
+  const isGenerating = generateMutation.isPending;
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={!isGenerating ? onClose : undefined} />
       <div className="relative w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-3xl p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -228,75 +232,37 @@ const AddLinkModal = ({ onClose, onAdd }: {
               {step === 1 ? 'Create Node' : 'Intelligence Preview'}
             </h2>
           </div>
-          <button onClick={onClose} className="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl transition-all">
+          <button onClick={onClose} disabled={isGenerating} className="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl transition-all disabled:opacity-40">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {step === 1 ? (
           <div className="space-y-5">
+            {/* URL-first: just paste the link */}
             <div>
-              <label className="fos-label block mb-2">Affiliate Program / Brand</label>
-              <input
-                type="text"
-                placeholder="e.g. Shopify, Amazon, ClickFunnels"
-                value={form.brandName}
-                onChange={e => setForm(f => ({ ...f, brandName: e.target.value }))}
-                className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-blue-500/50 transition-colors fos-mono"
-              />
-            </div>
-            <div>
-              <label className="fos-label block mb-2">Destination URL</label>
+              <label className="fos-label block mb-2">Affiliate Link URL</label>
               <input
                 type="url"
                 placeholder="https://youraffiliatelink.com/ref=..."
-                value={form.destination}
-                onChange={e => setForm(f => ({ ...f, destination: e.target.value }))}
-                className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-blue-500/50 transition-colors fos-mono"
+                value={destination}
+                onChange={e => setDestination(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && !isGenerating && handleGenerate()}
+                disabled={isGenerating}
+                className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-blue-500/50 transition-colors fos-mono disabled:opacity-50"
               />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="fos-label block mb-2">Primary Platform</label>
-                <select
-                  value={form.platform}
-                  onChange={e => setForm(f => ({ ...f, platform: e.target.value }))}
-                  className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors fos-mono"
-                >
-                  {platforms.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="fos-label block mb-2">Category</label>
-                <select
-                  value={form.category}
-                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                  className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors fos-mono"
-                >
-                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-            </div>
-            <div>
-              <label className="fos-label block mb-2">Custom Slug (optional)</label>
-              <input
-                type="text"
-                placeholder="my-campaign-slug"
-                value={form.slug}
-                onChange={e => setForm(f => ({ ...f, slug: e.target.value }))}
-                className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-blue-500/50 transition-colors fos-mono"
-              />
+              <p className="text-[11px] text-zinc-600 mt-2 fos-mono">Paste your affiliate link — AI will research the program and build the full intelligence package automatically.</p>
             </div>
 
             <button
               onClick={handleGenerate}
-              disabled={isGenerating}
+              disabled={isGenerating || !destination}
               className="w-full py-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-2xl transition-all flex items-center justify-center gap-3 active:scale-95 fos-glow-blue"
             >
               {isGenerating ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  Running AI Compliance + Intelligence Scan...
+                  Running AI Intelligence Scan...
                 </>
               ) : (
                 <>
@@ -305,40 +271,82 @@ const AddLinkModal = ({ onClose, onAdd }: {
                 </>
               )}
             </button>
+
+            {isGenerating && (
+              <div className="space-y-2">
+                {[
+                  { label: 'Identifying affiliate program...', delay: 0 },
+                  { label: 'Researching keywords & search intent...', delay: 1 },
+                  { label: 'Building buyer personas...', delay: 2 },
+                  { label: 'Crafting marketing angles...', delay: 3 },
+                  { label: 'Running FTC compliance scan...', delay: 4 },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-2.5 text-[11px] text-zinc-500 fos-mono animate-in fade-in slide-in-from-left-2" style={{ animationDelay: `${item.delay * 0.4}s` }}>
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                    {item.label}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="space-y-5">
-            <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+        ) : generatedData ? (
+          <div className="space-y-4">
+            {/* Compliance status */}
+            <div className={`p-4 rounded-2xl flex items-center gap-3 ${
+              generatedData.complianceStatus === 'passed'
+                ? 'bg-emerald-500/5 border border-emerald-500/20'
+                : generatedData.complianceStatus === 'warning'
+                ? 'bg-amber-500/5 border border-amber-500/20'
+                : 'bg-rose-500/5 border border-rose-500/20'
+            }`}>
+              <CheckCircle2 className={`w-5 h-5 shrink-0 ${
+                generatedData.complianceStatus === 'passed' ? 'text-emerald-400' : generatedData.complianceStatus === 'warning' ? 'text-amber-400' : 'text-rose-400'
+              }`} />
               <div>
-                <p className="text-xs font-black text-emerald-400 uppercase tracking-widest fos-mono">Compliance Scan: Passed</p>
-                <p className="text-[11px] text-zinc-500 mt-0.5">FTC disclosure language generated. All rules verified.</p>
+                <p className={`text-xs font-black uppercase tracking-widest fos-mono ${
+                  generatedData.complianceStatus === 'passed' ? 'text-emerald-400' : generatedData.complianceStatus === 'warning' ? 'text-amber-400' : 'text-rose-400'
+                }`}>Compliance: {generatedData.complianceStatus.toUpperCase()}</p>
+                <p className="text-[11px] text-zinc-500 mt-0.5 fos-mono">{generatedData.disclosure}</p>
               </div>
             </div>
-            <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-2xl">
-              <p className="fos-label text-blue-400 mb-3">Intelligence Generated</p>
+
+            {/* Intelligence summary */}
+            <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="fos-label text-blue-400">Intelligence Generated</p>
+                <span className="text-[10px] text-blue-500 fos-mono bg-blue-500/10 px-2 py-0.5 rounded-full">{generatedData.brandName}</span>
+              </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs text-zinc-400">
-                  <Target className="w-3.5 h-3.5 text-blue-400" />
-                  <span>3 keywords researched for <span className="text-white font-bold">{form.platform}</span></span>
+                  <Target className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <span><span className="text-white font-bold">{generatedData.keywordResearch.length}</span> keywords researched for <span className="text-white font-bold">{generatedData.platform}</span></span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-zinc-400">
-                  <UserCheck className="w-3.5 h-3.5 text-blue-400" />
-                  <span>1 persona profile created</span>
+                  <UserCheck className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <span><span className="text-white font-bold">{generatedData.personas.length}</span> buyer personas built</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-zinc-400">
-                  <Megaphone className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Marketing angle: <span className="text-white font-bold">{form.brandName} Authority</span></span>
+                  <Megaphone className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <span className="line-clamp-1">Angle: <span className="text-white font-bold">{generatedData.marketingAngle.slice(0, 60)}...</span></span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-zinc-400">
-                  <FileText className="w-3.5 h-3.5 text-blue-400" />
-                  <span>3 content suggestions ready</span>
+                  <FileText className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <span><span className="text-white font-bold">{generatedData.contentSuggestions.length}</span> content ideas generated</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-zinc-400">
+                  <Globe className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <span>Platforms: <span className="text-white font-bold">{generatedData.targetPlatforms.slice(0, 3).join(', ')}</span></span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-zinc-400">
+                  <TrendingUp className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>Commission: <span className="text-amber-400 font-bold">{generatedData.commission}</span></span>
                 </div>
               </div>
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={() => setStep(1)}
+                onClick={() => { setStep(1); setGeneratedData(null); }}
                 className="py-3.5 bg-zinc-900 hover:bg-zinc-800 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all fos-mono"
               >
                 Back
@@ -351,7 +359,7 @@ const AddLinkModal = ({ onClose, onAdd }: {
               </button>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

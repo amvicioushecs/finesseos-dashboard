@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1771819523362,
+      "tag": "0000_sparkling_ultimo",
+      "breakpoints": true
+    }
+  ]
+}
