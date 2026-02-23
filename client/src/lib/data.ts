@@ -48,6 +48,8 @@ export interface AffiliateLink {
   destination: string;
   status: LinkStatus;
   clicks: string;
+  clickCount?: number;
+  trackingId?: string | null;
   earnings?: string;
   commission?: string;
   compliance: Compliance;

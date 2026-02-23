@@ -34,6 +34,8 @@ export const affiliateNodes = mysqlTable("affiliateNodes", {
   status: mysqlEnum("status", ["active", "paused", "alert"]).default("active").notNull(),
   // Performance
   clicks: varchar("clicks", { length: 32 }).default("0").notNull(),
+  clickCount: int("clickCount").default(0).notNull(),
+  trackingId: varchar("trackingId", { length: 16 }).unique(),
   earnings: varchar("earnings", { length: 32 }).default("$0").notNull(),
   commission: varchar("commission", { length: 128 }).default("TBD").notNull(),
   // Compliance (JSON arrays stored as text)

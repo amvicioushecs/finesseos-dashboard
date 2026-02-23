@@ -81,6 +81,8 @@ export type FrontendNode = {
   category: string;
   status: 'active' | 'paused' | 'alert';
   clicks: string;
+  clickCount: number;
+  trackingId: string | null;
   earnings: string;
   commission: string;
   createdAt: string;
@@ -120,6 +122,8 @@ export function nodeRowToFrontend(row: typeof affiliateNodes.$inferSelect, asset
     category: row.category,
     status: row.status,
     clicks: row.clicks,
+    clickCount: row.clickCount ?? 0,
+    trackingId: row.trackingId ?? null,
     earnings: row.earnings,
     commission: row.commission,
     createdAt: row.createdAt.toISOString().split('T')[0],
@@ -233,8 +237,30 @@ export async function createNode(userId: number, data: {
     brandDomain: data.brandDomain ?? null,
   };
 
+  // Generate a unique 8-char tracking ID
+  const trackingId = Math.random().toString(36).slice(2, 10);
+  insert.trackingId = trackingId;
+
   const [result] = await db.insert(affiliateNodes).values(insert);
   return (result as { insertId: number }).insertId;
+}
+
+export async function getNodeByTrackingId(trackingId: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(affiliateNodes).where(eq(affiliateNodes.trackingId, trackingId)).limit(1);
+  return rows.length > 0 ? rows[0] : null;
+}
+
+export async function incrementNodeClickCount(nodeId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  // Increment clickCount and update the display clicks string
+  const rows = await db.select({ clickCount: affiliateNodes.clickCount }).from(affiliateNodes).where(eq(affiliateNodes.id, nodeId)).limit(1);
+  if (rows.length === 0) return;
+  const newCount = (rows[0].clickCount ?? 0) + 1;
+  const displayClicks = newCount >= 1000 ? `${(newCount / 1000).toFixed(1)}k` : String(newCount);
+  await db.update(affiliateNodes).set({ clickCount: newCount, clicks: displayClicks }).where(eq(affiliateNodes.id, nodeId));
 }
 
 export async function deleteNode(nodeId: number, userId: number): Promise<void> {

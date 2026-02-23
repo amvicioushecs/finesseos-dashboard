@@ -82,6 +82,16 @@ export const nodesRouter = router({
       return node;
     }),
 
+  // Get the tracked link URL for a node (for sharing/promotion)
+  getTrackedUrl: protectedProcedure
+    .input(z.object({ nodeId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const node = await getNodeById(input.nodeId, ctx.user.id);
+      if (!node) throw new TRPCError({ code: "NOT_FOUND", message: "Node not found" });
+      if (!node.trackingId) return { trackedUrl: null };
+      return { trackedUrl: `/go/${node.trackingId}` };
+    }),
+
   // Delete a node (also deletes all its assets)
   delete: protectedProcedure
     .input(z.object({ nodeId: z.number() }))

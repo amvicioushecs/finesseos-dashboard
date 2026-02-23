@@ -35,6 +35,27 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+
+  // ── Tracked affiliate link redirect ──────────────────────────────────────────
+  // Public endpoint: GET /go/:trackingId
+  // Increments click counter and redirects to the affiliate destination URL
+  app.get('/go/:trackingId', async (req, res) => {
+    try {
+      const { getNodeByTrackingId, incrementNodeClickCount } = await import('../db');
+      const node = await getNodeByTrackingId(req.params.trackingId);
+      if (!node) {
+        res.status(404).send('Link not found');
+        return;
+      }
+      // Fire-and-forget click increment (don't block the redirect)
+      incrementNodeClickCount(node.id).catch(err => console.error('[ClickTrack] Failed to increment:', err));
+      res.redirect(302, node.destination);
+    } catch (err) {
+      console.error('[ClickTrack] Error:', err);
+      res.status(500).send('Internal error');
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",

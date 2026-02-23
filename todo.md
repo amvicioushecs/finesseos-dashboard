@@ -66,3 +66,8 @@
 - [x] Wire delete to tRPC nodes.delete mutation (removes node + all assets from DB)
 - [x] Replace sidebar bolt icon with official FinesseOS logo (~32px)
 - [x] Auth gate /dashboard — redirect unauthenticated users to login
+- [x] Add clickCount column to affiliateNodes DB table
+- [x] Build public /go/:trackingId redirect endpoint that increments clicks
+- [x] Add getTrackedUrl tRPC procedure
+- [x] Show tracked link URL per node in workspace
+- [x] Display live click counts on Vault cards and Overview stats

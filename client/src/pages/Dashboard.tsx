@@ -419,9 +419,11 @@ const AddLinkModal = ({ onClose, onAdd }: {
 
 // ─── Dashboard Overview ────────────────────────────────────
 const DashboardOverview = ({ links }: { links: AffiliateLink[] }) => {
+  // Use real tracked clickCount if available, otherwise fall back to display string parsing
   const totalClicks = links.reduce((sum, l) => {
-    const n = parseFloat(l.clicks.replace('K', '')) * (l.clicks.includes('K') ? 1000 : 1);
-    return sum + n;
+    if (l.clickCount !== undefined) return sum + l.clickCount;
+    const n = parseFloat(l.clicks.replace('K', '').replace('k', '')) * (l.clicks.toLowerCase().includes('k') ? 1000 : 1);
+    return sum + (isNaN(n) ? 0 : n);
   }, 0);
   const alertCount = links.filter(l => l.status === 'alert').length;
   const totalEarnings = links.reduce((sum, l) => {
@@ -672,9 +674,12 @@ const CampaignVault = ({
               </div>
 
               <div className="grid grid-cols-3 gap-2 mb-6">
-                <div className="bg-black/60 p-3 rounded-xl border border-zinc-800/40 text-center">
+                <div className="bg-black/60 p-3 rounded-xl border border-zinc-800/40 text-center relative">
+                  {link.trackingId && (
+                    <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" title="Click tracking active" />
+                  )}
                   <p className="fos-label mb-1">Clicks</p>
-                  <p className="text-base font-black text-white">{link.clicks}</p>
+                  <p className="text-base font-black text-white">{link.clickCount !== undefined ? link.clickCount.toLocaleString() : link.clicks}</p>
                 </div>
                 <div className="bg-black/60 p-3 rounded-xl border border-zinc-800/40 text-center">
                   <p className="fos-label mb-1">Assets</p>
@@ -967,6 +972,33 @@ const LinkExplorer = ({
                 </a>
               </div>
             </div>
+
+            {/* Tracked Link */}
+            {link.trackingId && (
+              <div className="fos-card p-6 border-blue-500/30" style={{ borderColor: 'rgba(59,130,246,0.3)' }}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                    <p className="fos-label text-blue-400">Your Tracked Link</p>
+                  </div>
+                  <span className="text-xs fos-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full">{link.clickCount ?? 0} clicks tracked</span>
+                </div>
+                <div className="flex items-center gap-3 p-3.5 bg-black border border-blue-500/20 rounded-xl">
+                  <span className="text-xs text-blue-300 fos-mono truncate flex-1">{window.location.origin}/go/{link.trackingId}</span>
+                  <button
+                    onClick={() => copyToClipboard(`${window.location.origin}/go/${link.trackingId}`, 'Tracked link copied!')}
+                    className="p-1.5 hover:bg-blue-500/20 rounded-lg transition-all text-zinc-600 hover:text-blue-400"
+                    title="Copy tracked link"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                  <a href={`/go/${link.trackingId}`} target="_blank" rel="noopener noreferrer" className="p-1.5 hover:bg-blue-500/20 rounded-lg transition-all text-zinc-600 hover:text-blue-400" title="Test tracked link">
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+                <p className="text-xs text-zinc-600 mt-2">Share this link instead of your raw affiliate URL. Every click is counted automatically.</p>
+              </div>
+            )}
 
             {/* Performance */}
             <div className="fos-card p-6">
