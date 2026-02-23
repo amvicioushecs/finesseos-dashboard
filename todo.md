@@ -54,3 +54,6 @@
 - [x] Wire Dashboard vault to DB (replace local state with trpc queries/mutations)
 - [x] S3 asset upload flow with drag-and-drop per node
 - [x] FinesseOS.pro landing page (public-facing, converts visitors to users)
+- [ ] Rewrite hero copy — clear who it's for, what it does, fifth-grade reading level
+- [ ] Increase hero text size and brightness for legibility
+- [ ] Upgrade hero font for impact and readability

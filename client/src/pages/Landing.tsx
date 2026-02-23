@@ -255,62 +255,88 @@ export default function Landing() {
             />
           </div>
 
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-full text-[11px] font-mono text-zinc-500 mb-8 hover:border-blue-500/30 transition-all">
-            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-            AI-Powered Affiliate Intelligence Platform
-            <ChevronRight className="w-3 h-3" />
+          {/* Who it's for badge */}
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600/10 border border-blue-500/30 rounded-full mb-8">
+            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+            <span className="text-blue-300 font-semibold text-sm" style={{ fontFamily: "'Inter', sans-serif" }}>For Affiliate Marketers</span>
           </div>
 
-          {/* Headline */}
-          <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-none mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            The Affiliate
+          {/* Headline — crystal clear, large, bright */}
+          <h1
+            className="font-black text-white leading-tight tracking-tight mb-6"
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: 'clamp(2.8rem, 7vw, 5.5rem)',
+              lineHeight: 1.05,
+              textShadow: '0 0 60px rgba(255,255,255,0.08)',
+            }}
+          >
+            You paste an affiliate link.
             <br />
-            <span className="text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%)' }}>
-              Intelligence OS
+            <span
+              style={{
+                backgroundImage: 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #38bdf8 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              We build your whole campaign.
             </span>
           </h1>
 
-          {/* Sub-headline */}
-          <p className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto mb-4 leading-relaxed">
-            Paste a link. Get a complete campaign.
+          {/* Sub-headline — plain, direct, bright */}
+          <p
+            className="text-zinc-200 max-w-2xl mx-auto mb-5 leading-relaxed font-medium"
+            style={{ fontFamily: "'Inter', sans-serif", fontSize: 'clamp(1.1rem, 2.5vw, 1.35rem)' }}
+          >
+            FinesseOS is the tool for affiliate marketers who are tired of guessing.
+            Paste your link — AI instantly gives you keywords, buyer personas,
+            marketing angles, FTC compliance, and a place to store all your assets.
           </p>
-          <p className="text-sm text-zinc-600 max-w-xl mx-auto mb-12 leading-relaxed">
-            FinesseOS turns your affiliate links into fully-researched campaign nodes — with AI-generated keywords, buyer personas, marketing angles, compliance checks, and a built-in asset vault. Everything in one place.
+
+          {/* Simple value prop line */}
+          <p
+            className="text-zinc-400 max-w-lg mx-auto mb-12 text-base"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+          >
+            No more 10 open tabs. No more scattered files. Just one link → one complete campaign.
           </p>
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <a
               href={loginUrl}
-              className="flex items-center gap-3 px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all active:scale-95 text-sm"
-              style={{ boxShadow: '0 0 40px rgba(37,99,235,0.4)' }}
+              className="flex items-center gap-3 px-10 py-5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl transition-all active:scale-95"
+              style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.1rem', boxShadow: '0 0 60px rgba(37,99,235,0.5), 0 4px 24px rgba(0,0,0,0.4)' }}
             >
-              <Zap className="w-4 h-4 fill-white" />
-              Enter the OS
-              <ArrowRight className="w-4 h-4" />
+              <Zap className="w-5 h-5 fill-white" />
+              Start Free — Try It Now
+              <ArrowRight className="w-5 h-5" />
             </a>
             <a
               href="#how-it-works"
-              className="flex items-center gap-2 px-8 py-4 bg-zinc-950 hover:bg-zinc-900 text-zinc-300 font-bold rounded-2xl transition-all border border-zinc-800 hover:border-zinc-700 text-sm"
+              className="flex items-center gap-2 px-8 py-5 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-2xl transition-all border border-zinc-700 hover:border-zinc-500"
+              style={{ fontFamily: "'Inter', sans-serif", fontSize: '1rem' }}
             >
               See How It Works
+              <ChevronRight className="w-4 h-4" />
             </a>
           </div>
 
           {/* Stats bar */}
-          <div className="inline-flex flex-wrap items-center justify-center gap-6 sm:gap-10 px-8 py-5 bg-zinc-950/80 border border-zinc-800 rounded-2xl backdrop-blur-md">
+          <div className="inline-flex flex-wrap items-center justify-center gap-8 sm:gap-12 px-10 py-6 bg-zinc-900/80 border border-zinc-700 rounded-2xl backdrop-blur-md">
             {[
-              { value: 10, suffix: '', label: 'Keywords per node' },
-              { value: 4, suffix: '', label: 'Buyer personas' },
-              { value: 5, suffix: '', label: 'Target platforms' },
-              { value: 0, suffix: ' tabs', label: 'Needed outside FinesseOS' },
+              { value: 10, suffix: '', label: 'Keywords Generated' },
+              { value: 4, suffix: '', label: 'Buyer Personas Built' },
+              { value: 5, suffix: '', label: 'Best Platforms Ranked' },
+              { value: 0, suffix: ' tabs', label: 'Extra Tools Needed' },
             ].map((stat, i) => (
               <div key={i} className="text-center">
-                <div className="text-2xl font-black text-white tracking-tighter">
+                <div className="text-3xl font-black text-white tracking-tighter" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                   <Counter end={stat.value} suffix={stat.suffix} />
                 </div>
-                <div className="text-[10px] text-zinc-600 font-mono uppercase tracking-widest mt-0.5">{stat.label}</div>
+                <div className="text-xs text-zinc-400 font-semibold mt-1" style={{ fontFamily: "'Inter', sans-serif" }}>{stat.label}</div>
               </div>
             ))}
           </div>
@@ -321,22 +347,22 @@ export default function Landing() {
       <section className="py-24 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-4">The Problem</p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tighter">
-              Affiliate marketing is fragmented.
+            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>The Problem</p>
+            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Sound familiar?
               <br />
-              <span className="text-blue-400">FinesseOS fixes that.</span>
+              <span className="text-blue-400">FinesseOS fixes all of this.</span>
             </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { icon: '01', text: 'You paste a link and stare at a blank screen — no strategy, no direction.' },
-              { icon: '02', text: 'You research keywords in one tab, build personas in another, write copy in a third.' },
-              { icon: '03', text: 'You forget FTC disclosures until it\'s too late and your account gets flagged.' },
-              { icon: '04', text: 'Your assets — banners, copy, images — are scattered across Drive, Notion, and your desktop.' },
-              { icon: '05', text: 'You have no system. Just chaos. And chaos doesn\'t scale.' },
-              { icon: '→', text: 'FinesseOS eliminates every one of these problems with a single, intelligent workflow.', highlight: true },
+              { icon: '01', text: 'You get an affiliate link and have no idea where to start.' },
+              { icon: '02', text: 'You have 10 tabs open — keywords here, personas there, copy somewhere else.' },
+              { icon: '03', text: 'You forget FTC disclosures and risk getting your account banned.' },
+              { icon: '04', text: 'Your banners, images, and copy are scattered everywhere — impossible to find.' },
+              { icon: '05', text: 'You have no system. You\'re just winging it. And that doesn\'t scale.' },
+              { icon: '→', text: 'FinesseOS gives you one place for everything. Paste a link — get a complete campaign, instantly.', highlight: true },
             ].map((item, i) => (
               <div
                 key={i}
@@ -353,7 +379,7 @@ export default function Landing() {
                 )}>
                   {item.icon}
                 </div>
-                <p className={cn('text-sm leading-relaxed', item.highlight ? 'text-zinc-300' : 'text-zinc-500')}>
+                <p className={cn('text-sm leading-relaxed font-medium', item.highlight ? 'text-zinc-200' : 'text-zinc-300')} style={{ fontFamily: "'Inter', sans-serif" }}>
                   {item.text}
                 </p>
               </div>
@@ -366,11 +392,11 @@ export default function Landing() {
       <section id="how-it-works" className="py-24 px-6 border-t border-zinc-900">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-4">The System</p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tighter">
-              One link. One node.
+            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>How It Works</p>
+            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              3 steps. That's it.
               <br />
-              <span className="text-blue-400">Everything you need.</span>
+              <span className="text-blue-400">You'll be set up in under 2 minutes.</span>
             </h2>
           </div>
 
@@ -380,27 +406,17 @@ export default function Landing() {
                 {
                   number: '01',
                   title: 'Paste your affiliate link',
-                  description: 'FinesseOS identifies the program, brand, category, and commission structure automatically — no manual input required.',
+                  description: 'Just drop in your link. FinesseOS figures out the program, the brand, and the commission rate automatically.',
                 },
                 {
                   number: '02',
-                  title: 'AI builds the intelligence package',
-                  description: '10 targeted keywords, 4 buyer personas, a marketing angle, 6 content ideas, 5 target platforms, and an FTC-compliant disclosure. Generated in seconds.',
+                  title: 'AI does all the research for you',
+                  description: 'In seconds, you get 10 keywords to target, 4 buyer personas, a marketing angle, 6 content ideas, and the top 5 platforms to promote on.',
                 },
                 {
                   number: '03',
-                  title: 'Compliance is automatic',
-                  description: 'Every node gets a compliance scan. FTC rules, disclosure language, and platform-specific guidelines are pre-loaded and reviewed by AI.',
-                },
-                {
-                  number: '04',
-                  title: 'Your asset vault lives inside the node',
-                  description: 'Drag and drop banners, images, copy, and videos directly into the campaign node. Everything for that campaign, in one place.',
-                },
-                {
-                  number: '05',
-                  title: 'The Intelligence Hub aggregates everything',
-                  description: 'See all your keywords, personas, and strategies across every campaign from a single command view.',
+                  title: 'Compliance is handled automatically',
+                  description: 'FTC rules, disclosure language, platform guidelines — AI checks all of it so you never get flagged or banned.',
                 },
               ].map((step, i) => (
                 <StepCard key={i} {...step} />
@@ -464,55 +480,55 @@ export default function Landing() {
       <section id="features" className="py-24 px-6 border-t border-zinc-900">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-4">Features</p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tighter">
-              Built for the affiliate marketer
+            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>Everything Included</p>
+            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Everything you need to make money
               <br />
-              <span className="text-blue-400">who moves with intention.</span>
+              <span className="text-blue-400">with any affiliate program.</span>
             </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <FeatureCard
               icon={BrainCircuit}
-              title="AI Intelligence Engine"
-              description="Keywords, personas, marketing angles, and content ideas — all generated from your affiliate link in seconds."
+              title="AI Does the Research"
+              description="Paste your link. Get keywords, buyer personas, marketing angles, and content ideas — all in seconds. No research required."
               accent
             />
             <FeatureCard
               icon={Shield}
-              title="FTC Compliance Scanner"
-              description="Automatic disclosure language and compliance rules per program. Never get flagged again."
+              title="Compliance on Autopilot"
+              description="AI writes your FTC disclosures and checks platform rules automatically. You stay protected without thinking about it."
             />
             <FeatureCard
               icon={Layers}
-              title="Asset Vault"
-              description="Drag-and-drop file storage inside every campaign node. Banners, images, copy, videos — all organized."
+              title="Your Files, All in One Place"
+              description="Drag and drop your banners, images, and copy into each campaign. No more hunting through Google Drive or your desktop."
             />
             <FeatureCard
               icon={Target}
-              title="Platform Targeting"
-              description="AI identifies the best platforms for each program — TikTok, YouTube, Instagram, email, and more."
+              title="Know Where to Promote"
+              description="AI tells you exactly which platforms — TikTok, YouTube, Instagram, email — will work best for each affiliate program."
             />
             <FeatureCard
               icon={Users}
-              title="Buyer Persona Builder"
-              description="4 detailed buyer personas per campaign with pain points, hooks, and platform-specific messaging."
+              title="Know Exactly Who to Target"
+              description="Get 4 detailed buyer personas per campaign — who they are, what they want, and how to talk to them on each platform."
             />
             <FeatureCard
               icon={TrendingUp}
-              title="Intelligence Hub"
-              description="Aggregated view of all keywords, personas, and strategies across every campaign from one command center."
+              title="See All Your Campaigns at Once"
+              description="One dashboard to see all your keywords, personas, and strategies across every affiliate program you're running."
             />
             <FeatureCard
               icon={Link2}
-              title="Campaign Nodes"
-              description="Each affiliate link becomes a structured, searchable workspace. Your entire operation, organized."
+              title="One Link = One Campaign Workspace"
+              description="Every affiliate link gets its own organized workspace with everything you need to promote it successfully."
             />
             <FeatureCard
               icon={FileText}
-              title="Content Suggestions"
-              description="6 AI-generated content ideas per node — hooks, angles, and formats optimized for each target platform."
+              title="Content Ideas Ready to Go"
+              description="Get 6 content ideas per campaign — hooks, angles, and formats already tailored to the platforms you're targeting."
             />
             <FeatureCard
               icon={Lock}
@@ -526,8 +542,8 @@ export default function Landing() {
       {/* ── Social Proof ── */}
       <section className="py-24 px-6 border-t border-zinc-900">
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-4">By the Numbers</p>
-          <h2 className="text-3xl font-black text-white tracking-tighter mb-16">The numbers speak.</h2>
+          <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>What You Get Per Campaign</p>
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-16" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Every link. Fully loaded.</h2>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {[
@@ -541,7 +557,7 @@ export default function Landing() {
                   <Counter end={stat.value} suffix={stat.suffix} />
                 </div>
                 <div className="text-sm font-bold text-zinc-300 mb-1">{stat.label}</div>
-                <div className="text-[10px] text-zinc-600 font-mono">{stat.desc}</div>
+                <div className="text-xs text-zinc-400 font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>{stat.desc}</div>
               </div>
             ))}
           </div>
@@ -552,9 +568,9 @@ export default function Landing() {
       <section id="pricing" className="py-24 px-6 border-t border-zinc-900">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-4">Pricing</p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tighter">Simple. No games.</h2>
-            <p className="text-zinc-500 text-sm mt-4">Start free. Scale when you're ready.</p>
+            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>Pricing</p>
+            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Start free. Upgrade when you're ready.</h2>
+            <p className="text-zinc-300 text-base mt-4 font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>No credit card required to get started.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -613,24 +629,28 @@ export default function Landing() {
               <Star key={i} className="w-5 h-5 text-amber-400 fill-amber-400" />
             ))}
           </div>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter mb-6">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             Stop guessing.
             <br />
-            <span className="text-blue-400">Start operating.</span>
+            <span className="text-blue-400">Start making money.</span>
           </h2>
-          <p className="text-zinc-400 text-lg mb-12 max-w-xl mx-auto leading-relaxed">
-            Every affiliate marketer who uses FinesseOS stops asking "what do I do with this link?" and starts executing. The system does the research. You do the work.
+          <p className="text-zinc-200 text-xl mb-4 max-w-xl mx-auto leading-relaxed font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
+            Paste your first affiliate link. Get your full campaign in seconds.
+          </p>
+          <p className="text-zinc-400 text-base mb-12 max-w-lg mx-auto" style={{ fontFamily: "'Inter', sans-serif" }}>
+            No more guessing. No more scattered files. No more getting flagged.
+            Just a clear system that tells you exactly what to do.
           </p>
           <a
             href={loginUrl}
-            className="inline-flex items-center gap-3 px-10 py-5 bg-blue-600 hover:bg-blue-500 text-white font-black text-sm rounded-2xl transition-all active:scale-95"
-            style={{ boxShadow: '0 0 60px rgba(37,99,235,0.4)' }}
+            className="inline-flex items-center gap-3 px-12 py-5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl transition-all active:scale-95"
+            style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.15rem', boxShadow: '0 0 80px rgba(37,99,235,0.5), 0 4px 30px rgba(0,0,0,0.5)' }}
           >
             <Zap className="w-5 h-5 fill-white" />
-            Launch FinesseOS
+            Get Started Free
             <ArrowRight className="w-5 h-5" />
           </a>
-          <p className="text-zinc-700 text-xs mt-6 font-mono">No credit card required · Free plan available</p>
+          <p className="text-zinc-500 text-sm mt-6" style={{ fontFamily: "'Inter', sans-serif" }}>Free plan available · No credit card required</p>
         </div>
       </section>
 
