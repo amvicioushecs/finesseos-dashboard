@@ -1,0 +1,1474 @@
+// ============================================================
+// FINESSEOS PRO — Main Dashboard Page
+// Design: Terminal-Noir OS / Affiliate Intelligence Platform
+// Layout: Fixed 320px sidebar + main content area
+// ============================================================
+
+import { useState, useCallback } from 'react';
+import {
+  LayoutDashboard,
+  ShieldCheck,
+  BookOpen,
+  AlertCircle,
+  CheckCircle2,
+  Copy,
+  Search,
+  Plus,
+  ArrowUpRight,
+  Settings,
+  FolderOpen,
+  Zap,
+  ArrowLeft,
+  FileText,
+  Download,
+  ExternalLink,
+  X,
+  Activity,
+  RefreshCw,
+  Fingerprint,
+  Target,
+  Sparkles,
+  Newspaper,
+  BrainCircuit,
+  Clock,
+  UserCheck,
+  Megaphone,
+  Cpu,
+  Key,
+  Lock,
+  Bell,
+  Trash2,
+  TrendingUp,
+  Globe,
+  ChevronRight,
+  Info,
+  Layers,
+  Tag,
+  BarChart2,
+  Link2,
+  Upload,
+  PlusCircle,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { initialLinks, systemNodes, apiIntegrations, intelligenceNews, type AffiliateLink, type Asset } from '@/lib/data';
+import { nanoid } from 'nanoid';
+
+// ─── Types ────────────────────────────────────────────────
+type ActiveTab = 'dashboard' | 'vault' | 'intelligence' | 'settings';
+
+// ─── Utility ──────────────────────────────────────────────
+const copyToClipboard = (text: string, label = 'Copied') => {
+  navigator.clipboard.writeText(text).catch(() => {
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+  });
+  toast.success(label, {
+    description: 'Secured to clipboard',
+    duration: 2500,
+  });
+};
+
+// ─── Sub-components ───────────────────────────────────────
+
+const NavItem = ({ icon: Icon, label, active, onClick }: {
+  icon: React.ElementType;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    className={`w-full flex items-center gap-5 px-6 py-4 rounded-2xl transition-all duration-300 group relative ${
+      active
+        ? 'bg-blue-600 text-white fos-nav-active scale-[1.02]'
+        : 'text-zinc-600 hover:text-white hover:bg-zinc-900'
+    }`}
+  >
+    {active && (
+      <div className="absolute left-0 w-1.5 h-7 bg-white rounded-r-full shadow-[0_0_20px_rgba(255,255,255,0.8)]" />
+    )}
+    <Icon className={`w-5 h-5 transition-transform duration-300 ${active ? 'scale-110' : 'group-hover:scale-110'}`} />
+    <span className="text-[11px] font-black uppercase tracking-[0.3em] leading-none fos-mono">{label}</span>
+  </button>
+);
+
+const MobileNavItem = ({ icon: Icon, label, active, onClick }: {
+  icon: React.ElementType;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${active ? 'text-blue-500 scale-110' : 'text-zinc-600'}`}
+  >
+    <div className={`p-2.5 rounded-xl transition-all ${active ? 'bg-blue-500/10' : ''}`}>
+      <Icon className="w-6 h-6" />
+    </div>
+    <span className="text-[9px] font-black uppercase tracking-[0.2em] fos-mono">{label}</span>
+  </button>
+);
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const map: Record<string, string> = {
+    active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    alert: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+    paused: 'bg-zinc-700/30 text-zinc-500 border-zinc-700/30',
+    passed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    warning: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    failed: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+    Connected: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    Pending: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    Inactive: 'bg-zinc-700/30 text-zinc-500 border-zinc-700/30',
+    optimal: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  };
+  return (
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest fos-mono ${map[status] || 'bg-zinc-800 text-zinc-400 border-zinc-700'}`}>
+      {status}
+    </span>
+  );
+};
+
+const AssetIcon = ({ type }: { type: string }) => {
+  const map: Record<string, React.ElementType> = {
+    image: Layers,
+    copy: FileText,
+    video: Activity,
+    banner: Tag,
+  };
+  const Icon = map[type] || FileText;
+  return <Icon className="w-4 h-4" />;
+};
+
+// ─── Add Link Modal ────────────────────────────────────────
+const AddLinkModal = ({ onClose, onAdd }: {
+  onClose: () => void;
+  onAdd: (link: AffiliateLink) => void;
+}) => {
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState({
+    brandName: '',
+    destination: '',
+    platform: 'TikTok',
+    category: 'E-Commerce',
+    slug: '',
+  });
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const platforms = ['TikTok', 'YouTube', 'Instagram', 'Email', 'LinkedIn', 'Pinterest', 'Twitter/X', 'Blog'];
+  const categories = ['E-Commerce', 'SaaS / Marketing', 'Tech & Gear', 'Finance', 'Health & Wellness', 'Education', 'Travel', 'Other'];
+
+  const handleGenerate = () => {
+    if (!form.brandName || !form.destination) {
+      toast.error('Missing fields', { description: 'Brand name and destination URL are required.' });
+      return;
+    }
+    setIsGenerating(true);
+    setTimeout(() => {
+      setIsGenerating(false);
+      setStep(2);
+    }, 2000);
+  };
+
+  const handleCreate = () => {
+    const slug = form.slug || `${form.brandName.toLowerCase().replace(/\s+/g, '-')}-${form.platform.toLowerCase()}`;
+    const newLink: AffiliateLink = {
+      id: nanoid(6),
+      brandName: form.brandName,
+      slug,
+      platform: form.platform,
+      destination: form.destination,
+      status: 'active',
+      clicks: '0',
+      earnings: '$0',
+      commission: 'TBD',
+      category: form.category,
+      createdAt: new Date().toISOString().split('T')[0],
+      compliance: {
+        disclosure: `AD: I earn a commission from ${form.brandName} at no extra cost to you.`,
+        rules: ['FTC disclosure required', 'No deceptive claims'],
+        status: 'passed',
+        lastChecked: new Date().toISOString().split('T')[0],
+        ftcNotes: 'AI compliance scan complete. Disclosure language meets FTC requirements.',
+      },
+      assets: [],
+      intelligence: {
+        keywordResearch: [`${form.brandName.toLowerCase()} review`, `best ${form.category.toLowerCase()}`, `${form.brandName.toLowerCase()} tutorial`],
+        marketingAngle: `The "${form.brandName} Authority" Angle. Position yourself as the go-to expert for ${form.brandName} on ${form.platform}.`,
+        personas: [
+          { name: 'Early Adopter', pain: 'Looking for the best solution in the market', hook: `Why ${form.brandName} is the top choice`, platform: form.platform },
+        ],
+        contentSuggestions: [
+          `My honest ${form.brandName} review after 30 days`,
+          `${form.brandName} vs competitors — the real breakdown`,
+          `How I use ${form.brandName} to [achieve result]`,
+        ],
+        targetPlatforms: [form.platform + ' (Primary)'],
+        strategyNotes: `Node created via FinesseOS intelligence engine. AI research in progress.`,
+      },
+    };
+    onAdd(newLink);
+    toast.success('Node Created', { description: `${form.brandName} affiliate node is now live.` });
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-3xl p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <div className="fos-label text-blue-500 mb-2">Step {step} of 2</div>
+            <h2 className="text-2xl font-black text-white tracking-tighter fos-heading">
+              {step === 1 ? 'Create Node' : 'Intelligence Preview'}
+            </h2>
+          </div>
+          <button onClick={onClose} className="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl transition-all">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {step === 1 ? (
+          <div className="space-y-5">
+            <div>
+              <label className="fos-label block mb-2">Affiliate Program / Brand</label>
+              <input
+                type="text"
+                placeholder="e.g. Shopify, Amazon, ClickFunnels"
+                value={form.brandName}
+                onChange={e => setForm(f => ({ ...f, brandName: e.target.value }))}
+                className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-blue-500/50 transition-colors fos-mono"
+              />
+            </div>
+            <div>
+              <label className="fos-label block mb-2">Destination URL</label>
+              <input
+                type="url"
+                placeholder="https://youraffiliatelink.com/ref=..."
+                value={form.destination}
+                onChange={e => setForm(f => ({ ...f, destination: e.target.value }))}
+                className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-blue-500/50 transition-colors fos-mono"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="fos-label block mb-2">Primary Platform</label>
+                <select
+                  value={form.platform}
+                  onChange={e => setForm(f => ({ ...f, platform: e.target.value }))}
+                  className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors fos-mono"
+                >
+                  {platforms.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="fos-label block mb-2">Category</label>
+                <select
+                  value={form.category}
+                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                  className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors fos-mono"
+                >
+                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="fos-label block mb-2">Custom Slug (optional)</label>
+              <input
+                type="text"
+                placeholder="my-campaign-slug"
+                value={form.slug}
+                onChange={e => setForm(f => ({ ...f, slug: e.target.value }))}
+                className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-blue-500/50 transition-colors fos-mono"
+              />
+            </div>
+
+            <button
+              onClick={handleGenerate}
+              disabled={isGenerating}
+              className="w-full py-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-2xl transition-all flex items-center justify-center gap-3 active:scale-95 fos-glow-blue"
+            >
+              {isGenerating ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Running AI Compliance + Intelligence Scan...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  Generate Node Intelligence
+                </>
+              )}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+              <div>
+                <p className="text-xs font-black text-emerald-400 uppercase tracking-widest fos-mono">Compliance Scan: Passed</p>
+                <p className="text-[11px] text-zinc-500 mt-0.5">FTC disclosure language generated. All rules verified.</p>
+              </div>
+            </div>
+            <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-2xl">
+              <p className="fos-label text-blue-400 mb-3">Intelligence Generated</p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs text-zinc-400">
+                  <Target className="w-3.5 h-3.5 text-blue-400" />
+                  <span>3 keywords researched for <span className="text-white font-bold">{form.platform}</span></span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-zinc-400">
+                  <UserCheck className="w-3.5 h-3.5 text-blue-400" />
+                  <span>1 persona profile created</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-zinc-400">
+                  <Megaphone className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Marketing angle: <span className="text-white font-bold">{form.brandName} Authority</span></span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-zinc-400">
+                  <FileText className="w-3.5 h-3.5 text-blue-400" />
+                  <span>3 content suggestions ready</span>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setStep(1)}
+                className="py-3.5 bg-zinc-900 hover:bg-zinc-800 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all fos-mono"
+              >
+                Back
+              </button>
+              <button
+                onClick={handleCreate}
+                className="py-3.5 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 fos-mono"
+              >
+                Create Node
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ─── Dashboard Overview ────────────────────────────────────
+const DashboardOverview = ({ links }: { links: AffiliateLink[] }) => {
+  const totalClicks = links.reduce((sum, l) => {
+    const n = parseFloat(l.clicks.replace('K', '')) * (l.clicks.includes('K') ? 1000 : 1);
+    return sum + n;
+  }, 0);
+  const alertCount = links.filter(l => l.status === 'alert').length;
+  const totalEarnings = links.reduce((sum, l) => {
+    const n = parseFloat((l.earnings || '$0').replace('$', '').replace(',', ''));
+    return sum + (isNaN(n) ? 0 : n);
+  }, 0);
+
+  const stats = [
+    { label: 'Live Campaigns', value: links.length.toString(), color: 'text-blue-400', icon: Target, glow: 'shadow-blue-500/10' },
+    { label: 'Total Clicks', value: totalClicks >= 1000 ? `${(totalClicks / 1000).toFixed(1)}K` : totalClicks.toString(), color: 'text-emerald-400', icon: Activity, glow: 'shadow-emerald-500/10' },
+    { label: 'System Alerts', value: alertCount.toString(), color: alertCount > 0 ? 'text-rose-400' : 'text-zinc-500', icon: AlertCircle, glow: 'shadow-rose-500/10' },
+    { label: 'Est. Earnings', value: `$${totalEarnings.toLocaleString()}`, color: 'text-amber-400', icon: TrendingUp, glow: 'shadow-amber-500/10' },
+  ];
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat, i) => (
+          <div key={i} className={`fos-card p-6 shadow-xl ${stat.glow}`}>
+            <div className="flex justify-between items-start mb-4">
+              <p className="fos-label">{stat.label}</p>
+              <stat.icon className={`w-4 h-4 ${stat.color} opacity-40`} />
+            </div>
+            <h3 className={`text-3xl font-black tracking-tighter fos-heading ${stat.color}`}>{stat.value}</h3>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-24 lg:pb-0">
+        {/* Action Feed */}
+        <div className="lg:col-span-2">
+          <div className="fos-card overflow-hidden">
+            <div className="px-6 py-4 border-b border-zinc-800/60 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="fos-pulse-dot" />
+                <span className="fos-label text-zinc-500">Inevitable_Action_Feed</span>
+              </div>
+              <span className="fos-label text-zinc-700">Live</span>
+            </div>
+            <div className="divide-y divide-zinc-800/40">
+              {links.filter(l => l.status === 'alert').map(link => (
+                <div key={link.id} className="px-6 py-5 flex items-center justify-between hover:bg-zinc-900/30 transition-all group">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-500">
+                      <AlertCircle className="w-4 h-4 animate-pulse" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-white uppercase tracking-tight leading-none">{link.slug}</p>
+                      <p className="fos-label text-rose-500/70 mt-1.5">Redirect failure — URL returning 404</p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1.5 bg-rose-500/10 text-rose-400 text-[9px] font-black uppercase tracking-widest rounded-lg border border-rose-500/20 fos-mono">
+                    Alert
+                  </span>
+                </div>
+              ))}
+              <div className="px-6 py-5 flex items-center gap-4 bg-zinc-950/30">
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-black text-white uppercase tracking-tight leading-none">All active nodes optimized</p>
+                  <p className="fos-label text-emerald-500/60 mt-1.5">Intelligence sync active — NODE_SYNCED</p>
+                </div>
+              </div>
+              {/* Recent activity */}
+              {links.filter(l => l.status === 'active').slice(0, 2).map(link => (
+                <div key={link.id} className="px-6 py-4 flex items-center justify-between hover:bg-zinc-900/20 transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400">
+                      <Zap className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-zinc-300 uppercase tracking-tight">{link.brandName} — {link.clicks} clicks</p>
+                      <p className="fos-label text-zinc-700 mt-1">Campaign active on {link.platform}</p>
+                    </div>
+                  </div>
+                  <span className="fos-label text-emerald-500">{link.earnings}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* OS Metrics */}
+        <div className="space-y-4">
+          <div className="fos-card p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <Zap className="w-4 h-4 text-blue-400" />
+              <h3 className="text-sm font-black text-white uppercase tracking-tight">OS Metrics</h3>
+            </div>
+            <div className="space-y-3">
+              {[
+                { label: 'Global Latency', value: '42ms', color: 'text-white' },
+                { label: 'Sync Status', value: 'NODE_SYNCED', color: 'text-emerald-400', mono: true },
+                { label: 'Compliance Engine', value: 'ACTIVE', color: 'text-blue-400', mono: true },
+                { label: 'AI Intelligence', value: 'ONLINE', color: 'text-emerald-400', mono: true },
+              ].map((m, i) => (
+                <div key={i} className="p-3.5 bg-black border border-zinc-800/60 rounded-xl flex items-center justify-between">
+                  <p className="fos-label">{m.label}</p>
+                  <p className={`text-xs font-black ${m.color} ${m.mono ? 'fos-mono' : ''}`}>{m.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick stats per campaign */}
+          <div className="fos-card p-6">
+            <p className="fos-label mb-4">Top Performer</p>
+            {links.sort((a, b) => {
+              const ea = parseFloat((a.earnings || '$0').replace('$', '').replace(',', ''));
+              const eb = parseFloat((b.earnings || '$0').replace('$', '').replace(',', ''));
+              return eb - ea;
+            }).slice(0, 1).map(link => (
+              <div key={link.id}>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="fos-pulse-dot" />
+                  <span className="text-sm font-black text-white uppercase tracking-tight">{link.brandName}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-3 bg-black border border-zinc-800/60 rounded-xl">
+                    <p className="fos-label mb-1">Clicks</p>
+                    <p className="text-lg font-black text-white">{link.clicks}</p>
+                  </div>
+                  <div className="p-3 bg-black border border-zinc-800/60 rounded-xl">
+                    <p className="fos-label mb-1">Earnings</p>
+                    <p className="text-lg font-black text-emerald-400">{link.earnings}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Campaign Vault ────────────────────────────────────────
+const CampaignVault = ({
+  links,
+  searchQuery,
+  onSelectLink,
+  onAddLink,
+}: {
+  links: AffiliateLink[];
+  searchQuery: string;
+  onSelectLink: (link: AffiliateLink) => void;
+  onAddLink: () => void;
+}) => {
+  const filtered = links.filter(l =>
+    l.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    l.brandName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24 lg:pb-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-4xl font-black text-white tracking-tighter fos-heading">Campaign Vault</h2>
+          <p className="fos-label text-zinc-600 mt-2 italic">Management_Organized_By_Endpoint</p>
+        </div>
+        <button
+          onClick={onAddLink}
+          className="flex items-center gap-3 px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-2xl transition-all active:scale-95 fos-glow-blue fos-mono"
+        >
+          <Plus className="w-4 h-4" />
+          Add Link
+        </button>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="fos-card p-16 text-center">
+          <FolderOpen className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
+          <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm fos-mono">No nodes found</p>
+          <p className="text-zinc-700 text-xs mt-2">Add your first affiliate link to create a node</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filtered.map(link => (
+            <div
+              key={link.id}
+              className="fos-card fos-node-card p-7 group hover:border-blue-500/40 transition-all shadow-2xl"
+            >
+              {link.status === 'alert' && (
+                <div className="absolute top-5 right-5">
+                  <AlertCircle className="w-4 h-4 text-rose-500 animate-pulse" />
+                </div>
+              )}
+
+              <div className="mb-6">
+                <div className="flex items-center gap-2 fos-label text-blue-500 mb-2">
+                  <Fingerprint className="w-3 h-3" />
+                  {link.platform} · {link.category}
+                </div>
+                <h3 className="text-xl font-black text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight fos-heading truncate">
+                  {link.slug}
+                </h3>
+                <p className="fos-label text-zinc-600 mt-2 italic">{link.brandName}</p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 mb-6">
+                <div className="bg-black/60 p-3 rounded-xl border border-zinc-800/40 text-center">
+                  <p className="fos-label mb-1">Clicks</p>
+                  <p className="text-base font-black text-white">{link.clicks}</p>
+                </div>
+                <div className="bg-black/60 p-3 rounded-xl border border-zinc-800/40 text-center">
+                  <p className="fos-label mb-1">Assets</p>
+                  <p className="text-base font-black text-white">{link.assets.length}</p>
+                </div>
+                <div className="bg-black/60 p-3 rounded-xl border border-zinc-800/40 text-center">
+                  <p className="fos-label mb-1">Comms</p>
+                  <p className="text-base font-black text-emerald-400">{link.commission || '—'}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mb-5">
+                <StatusBadge status={link.compliance.status} />
+                <StatusBadge status={link.status} />
+              </div>
+
+              <button
+                onClick={() => onSelectLink(link)}
+                className="w-full py-4 bg-zinc-800 hover:bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-xl transition-all flex items-center justify-center gap-2.5 active:scale-95 fos-mono group-hover:bg-blue-600"
+              >
+                <FolderOpen className="w-4 h-4" />
+                Enter_Workspace
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Link Explorer (Node Workspace) ───────────────────────
+const LinkExplorer = ({
+  link,
+  onBack,
+  onUpdate,
+}: {
+  link: AffiliateLink;
+  onBack: () => void;
+  onUpdate: (updated: AffiliateLink) => void;
+}) => {
+  const [activeSection, setActiveSection] = useState<'overview' | 'compliance' | 'assets' | 'intelligence'>('overview');
+  const [uploadName, setUploadName] = useState('');
+  const [uploadType, setUploadType] = useState<'image' | 'copy' | 'banner' | 'video'>('image');
+
+  const sections = [
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'compliance', label: 'Compliance', icon: ShieldCheck },
+    { id: 'assets', label: 'Assets', icon: Layers },
+    { id: 'intelligence', label: 'Intelligence', icon: BrainCircuit },
+  ] as const;
+
+  const handleAddAsset = () => {
+    if (!uploadName) {
+      toast.error('Asset name required');
+      return;
+    }
+    const newAsset: Asset = {
+      id: nanoid(6),
+      name: uploadName,
+      type: uploadType,
+      size: '—',
+      uploadedAt: new Date().toISOString().split('T')[0],
+    };
+    onUpdate({ ...link, assets: [...link.assets, newAsset] });
+    setUploadName('');
+    toast.success('Asset added to node');
+  };
+
+  const handleDeleteAsset = (assetId: string) => {
+    onUpdate({ ...link, assets: link.assets.filter(a => a.id !== assetId) });
+    toast.success('Asset removed');
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-right-6 duration-400 pb-24 lg:pb-0">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onBack}
+            className="p-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl active:scale-90 transition-all"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <div className="fos-label text-blue-500 mb-1">{link.platform} · {link.category}</div>
+            <h2 className="text-3xl font-black text-white tracking-tighter fos-heading uppercase">{link.slug}</h2>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <StatusBadge status={link.status} />
+          <StatusBadge status={link.compliance.status} />
+          <button
+            onClick={() => copyToClipboard(link.destination, 'Link Copied')}
+            className="flex items-center gap-2 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all fos-mono"
+          >
+            <Copy className="w-3.5 h-3.5" />
+            Copy Link
+          </button>
+        </div>
+      </div>
+
+      {/* Section Tabs */}
+      <div className="flex gap-2 bg-zinc-950 border border-zinc-800/60 p-1.5 rounded-2xl w-fit">
+        {sections.map(s => (
+          <button
+            key={s.id}
+            onClick={() => setActiveSection(s.id)}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all fos-mono ${
+              activeSection === s.id
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'text-zinc-600 hover:text-white hover:bg-zinc-900'
+            }`}
+          >
+            <s.icon className="w-3.5 h-3.5" />
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Overview Section */}
+      {activeSection === 'overview' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">
+          <div className="lg:col-span-2 space-y-4">
+            {/* Destination URL */}
+            <div className="fos-card p-6">
+              <p className="fos-label mb-3">Destination URL</p>
+              <div className="flex items-center gap-3 p-3.5 bg-black border border-zinc-800/60 rounded-xl">
+                <Link2 className="w-4 h-4 text-blue-400 shrink-0" />
+                <span className="text-xs text-zinc-400 fos-mono truncate flex-1">{link.destination}</span>
+                <button
+                  onClick={() => copyToClipboard(link.destination, 'URL Copied')}
+                  className="p-1.5 hover:bg-zinc-800 rounded-lg transition-all text-zinc-600 hover:text-white"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </button>
+                <a href={link.destination} target="_blank" rel="noopener noreferrer" className="p-1.5 hover:bg-zinc-800 rounded-lg transition-all text-zinc-600 hover:text-white">
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </div>
+
+            {/* Performance */}
+            <div className="fos-card p-6">
+              <p className="fos-label mb-4">Performance Metrics</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: 'Clicks', value: link.clicks, color: 'text-blue-400' },
+                  { label: 'Earnings', value: link.earnings || '$0', color: 'text-emerald-400' },
+                  { label: 'Commission', value: link.commission || 'TBD', color: 'text-amber-400' },
+                  { label: 'Assets', value: link.assets.length.toString(), color: 'text-white' },
+                ].map((m, i) => (
+                  <div key={i} className="p-4 bg-black border border-zinc-800/60 rounded-xl">
+                    <p className="fos-label mb-2">{m.label}</p>
+                    <p className={`text-xl font-black tracking-tight fos-heading ${m.color}`}>{m.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Marketing Angle Preview */}
+            <div className="fos-card p-6 fos-accent-line pl-8">
+              <div className="flex items-center gap-2 mb-3">
+                <Megaphone className="w-4 h-4 text-blue-400" />
+                <p className="fos-label text-blue-400">Marketing Angle</p>
+              </div>
+              <p className="text-sm text-zinc-300 leading-relaxed italic">"{link.intelligence.marketingAngle}"</p>
+            </div>
+          </div>
+
+          {/* Right panel */}
+          <div className="space-y-4">
+            <div className="fos-card p-6">
+              <p className="fos-label mb-4">Target Platforms</p>
+              <div className="space-y-2">
+                {link.intelligence.targetPlatforms.map((p, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 bg-black border border-zinc-800/60 rounded-xl">
+                    <Globe className="w-3.5 h-3.5 text-blue-400" />
+                    <span className="text-xs font-bold text-zinc-300">{p}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="fos-card p-6">
+              <p className="fos-label mb-4">Disclosure</p>
+              <div className="p-3.5 bg-black border border-zinc-800/60 rounded-xl">
+                <p className="text-xs text-zinc-400 leading-relaxed italic">"{link.compliance.disclosure}"</p>
+              </div>
+              <button
+                onClick={() => copyToClipboard(link.compliance.disclosure, 'Disclosure Copied')}
+                className="mt-3 w-full py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-500 hover:text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 fos-mono"
+              >
+                <Copy className="w-3 h-3" />
+                Copy Disclosure
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Compliance Section */}
+      {activeSection === 'compliance' && (
+        <div className="space-y-5 animate-in fade-in duration-300">
+          <div className="fos-card p-7">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="w-5 h-5 text-blue-400" />
+                <h3 className="text-lg font-black text-white uppercase tracking-tight">Compliance Status</h3>
+              </div>
+              <StatusBadge status={link.compliance.status} />
+            </div>
+
+            <div className="space-y-4">
+              {/* Disclosure */}
+              <div>
+                <p className="fos-label mb-3">Required Disclosure Language</p>
+                <div className="p-5 bg-black border border-zinc-800/60 rounded-2xl relative group">
+                  <p className="text-sm text-zinc-300 leading-relaxed italic">"{link.compliance.disclosure}"</p>
+                  <button
+                    onClick={() => copyToClipboard(link.compliance.disclosure, 'Disclosure Copied')}
+                    className="absolute top-4 right-4 p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-600 hover:text-white rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Rules */}
+              <div>
+                <p className="fos-label mb-3">Program Rules</p>
+                <div className="space-y-2">
+                  {link.compliance.rules.map((rule, i) => (
+                    <div key={i} className="flex items-start gap-3 p-4 bg-black border border-zinc-800/60 rounded-xl">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <span className="text-xs text-zinc-400">{rule}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* FTC Notes */}
+              {link.compliance.ftcNotes && (
+                <div className="p-5 bg-blue-500/5 border border-blue-500/20 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Info className="w-4 h-4 text-blue-400" />
+                    <p className="fos-label text-blue-400">AI Compliance Notes</p>
+                  </div>
+                  <p className="text-xs text-zinc-400 leading-relaxed">{link.compliance.ftcNotes}</p>
+                </div>
+              )}
+
+              {link.compliance.lastChecked && (
+                <div className="flex items-center gap-2 text-zinc-700">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span className="fos-label">Last checked: {link.compliance.lastChecked}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assets Section */}
+      {activeSection === 'assets' && (
+        <div className="space-y-5 animate-in fade-in duration-300">
+          {/* Upload new asset */}
+          <div className="fos-card p-6">
+            <p className="fos-label mb-4">Add Asset to Node</p>
+            <div className="flex gap-3">
+              <input
+                type="text"
+                placeholder="Asset name..."
+                value={uploadName}
+                onChange={e => setUploadName(e.target.value)}
+                className="flex-1 bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-blue-500/50 transition-colors fos-mono"
+              />
+              <select
+                value={uploadType}
+                onChange={e => setUploadType(e.target.value as typeof uploadType)}
+                className="bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors fos-mono"
+              >
+                <option value="image">Image</option>
+                <option value="copy">Copy</option>
+                <option value="banner">Banner</option>
+                <option value="video">Video</option>
+              </select>
+              <button
+                onClick={handleAddAsset}
+                className="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all active:scale-95 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest fos-mono"
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add
+              </button>
+            </div>
+          </div>
+
+          {/* Asset list */}
+          <div className="fos-card overflow-hidden">
+            <div className="px-6 py-4 border-b border-zinc-800/60">
+              <p className="fos-label">Asset Vault — {link.assets.length} files</p>
+            </div>
+            {link.assets.length === 0 ? (
+              <div className="p-12 text-center">
+                <Upload className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
+                <p className="text-zinc-600 text-sm font-bold uppercase tracking-widest fos-mono">No assets yet</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-zinc-800/40">
+                {link.assets.map(asset => (
+                  <div key={asset.id} className="px-6 py-4 flex items-center justify-between hover:bg-zinc-900/20 transition-all group">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2.5 bg-zinc-900 border border-zinc-800/60 rounded-xl text-blue-400">
+                        <AssetIcon type={asset.type} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-white">{asset.name}</p>
+                        <p className="fos-label text-zinc-700 mt-0.5">{asset.type.toUpperCase()} · {asset.size} · {asset.uploadedAt}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                      <button
+                        onClick={() => copyToClipboard(asset.name, 'Asset name copied')}
+                        className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-600 hover:text-white rounded-lg transition-all"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAsset(asset.id)}
+                        className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-lg transition-all"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Intelligence Section */}
+      {activeSection === 'intelligence' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 animate-in fade-in duration-300">
+          {/* Keywords */}
+          <div className="fos-card p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <Search className="w-4 h-4 text-blue-400" />
+              <p className="fos-label text-blue-400">Keyword Research</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {link.intelligence.keywordResearch.map((kw, i) => (
+                <button
+                  key={i}
+                  onClick={() => copyToClipboard(kw, 'Keyword copied')}
+                  className="px-3 py-1.5 bg-black border border-zinc-800/60 hover:border-blue-500/40 text-zinc-400 hover:text-white text-xs rounded-lg transition-all fos-mono flex items-center gap-1.5 group"
+                >
+                  {kw}
+                  <Copy className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-all" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Personas */}
+          <div className="fos-card p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <UserCheck className="w-4 h-4 text-blue-400" />
+              <p className="fos-label text-blue-400">Target Personas</p>
+            </div>
+            <div className="space-y-3">
+              {link.intelligence.personas.map((p, i) => (
+                <div key={i} className="p-4 bg-black border border-zinc-800/60 rounded-xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-black text-white uppercase tracking-tight">{p.name}</p>
+                    {p.platform && <span className="fos-label text-blue-500">{p.platform}</span>}
+                  </div>
+                  <p className="text-[11px] text-zinc-500 mb-1.5"><span className="text-zinc-600 font-bold">Pain:</span> {p.pain}</p>
+                  <p className="text-[11px] text-zinc-400"><span className="text-emerald-500 font-bold">Hook:</span> {p.hook}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Marketing Angle */}
+          <div className="fos-card p-6 fos-accent-line pl-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Megaphone className="w-4 h-4 text-blue-400" />
+              <p className="fos-label text-blue-400">Marketing Angle</p>
+            </div>
+            <p className="text-sm text-zinc-300 leading-relaxed italic mb-4">"{link.intelligence.marketingAngle}"</p>
+            <button
+              onClick={() => copyToClipboard(link.intelligence.marketingAngle, 'Angle copied')}
+              className="flex items-center gap-2 text-[9px] font-black text-zinc-600 hover:text-white uppercase tracking-widest transition-all fos-mono"
+            >
+              <Copy className="w-3 h-3" />
+              Copy Angle
+            </button>
+          </div>
+
+          {/* Content Suggestions */}
+          <div className="fos-card p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <Sparkles className="w-4 h-4 text-blue-400" />
+              <p className="fos-label text-blue-400">Content Suggestions</p>
+            </div>
+            <div className="space-y-2">
+              {link.intelligence.contentSuggestions.map((s, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-3 p-3.5 bg-black border border-zinc-800/60 hover:border-blue-500/30 rounded-xl group transition-all cursor-pointer"
+                  onClick={() => copyToClipboard(s, 'Content idea copied')}
+                >
+                  <ChevronRight className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+                  <span className="text-xs text-zinc-400 group-hover:text-white transition-colors">{s}</span>
+                  <Copy className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 ml-auto shrink-0 mt-0.5 transition-all" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Strategy Notes */}
+          {link.intelligence.strategyNotes && (
+            <div className="lg:col-span-2 fos-card p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <BrainCircuit className="w-4 h-4 text-blue-400" />
+                <p className="fos-label text-blue-400">Strategy Notes</p>
+              </div>
+              <p className="text-sm text-zinc-400 leading-relaxed">{link.intelligence.strategyNotes}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Intelligence Hub ──────────────────────────────────────
+const IntelligenceHub = ({ links }: { links: AffiliateLink[] }) => {
+  const allKeywords = Array.from(new Set(links.flatMap(l => l.intelligence.keywordResearch)));
+  const allPersonas = links.flatMap(l => l.intelligence.personas.map(p => ({ ...p, brand: l.brandName })));
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24 lg:pb-0">
+      <div>
+        <h2 className="text-4xl font-black text-white tracking-tighter fos-heading">Intelligence Hub</h2>
+        <p className="fos-label text-zinc-600 mt-2 italic">AI_Research_Aggregated_Across_All_Nodes</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* All Keywords */}
+        <div className="fos-card p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <Search className="w-4 h-4 text-blue-400" />
+            <p className="fos-label text-blue-400">Master Keyword Pool</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {allKeywords.map((kw, i) => (
+              <button
+                key={i}
+                onClick={() => copyToClipboard(kw, 'Keyword copied')}
+                className="px-3 py-1.5 bg-black border border-zinc-800/60 hover:border-blue-500/40 text-zinc-500 hover:text-white text-[10px] rounded-lg transition-all fos-mono"
+              >
+                {kw}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* All Personas */}
+        <div className="fos-card p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <UserCheck className="w-4 h-4 text-blue-400" />
+            <p className="fos-label text-blue-400">Persona Matrix</p>
+          </div>
+          <div className="space-y-3">
+            {allPersonas.slice(0, 5).map((p, i) => (
+              <div key={i} className="p-3.5 bg-black border border-zinc-800/60 rounded-xl">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs font-black text-white uppercase tracking-tight">{p.name}</p>
+                  <span className="fos-label text-blue-500">{p.brand}</span>
+                </div>
+                <p className="text-[10px] text-zinc-600">{p.hook}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Platform Distribution */}
+        <div className="fos-card p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <Globe className="w-4 h-4 text-blue-400" />
+            <p className="fos-label text-blue-400">Platform Distribution</p>
+          </div>
+          <div className="space-y-3">
+            {Array.from(new Set(links.map(l => l.platform))).map((platform, i) => {
+              const count = links.filter(l => l.platform === platform).length;
+              const pct = Math.round((count / links.length) * 100);
+              return (
+                <div key={i}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-bold text-zinc-400">{platform}</span>
+                    <span className="fos-label text-zinc-600">{pct}%</span>
+                  </div>
+                  <div className="h-1.5 bg-zinc-900 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-blue-600 rounded-full transition-all duration-700"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Intelligence Feed */}
+      <div>
+        <div className="flex items-center gap-3 mb-5">
+          <Newspaper className="w-4 h-4 text-blue-400" />
+          <h3 className="text-sm font-black text-white uppercase tracking-tight">Platform Intelligence Feed</h3>
+          <div className="fos-pulse-dot ml-2" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {intelligenceNews.map((news, i) => (
+            <div key={i} className="fos-card p-5 hover:border-zinc-700 transition-all">
+              <div className="flex items-center justify-between mb-3">
+                <span className="fos-label text-blue-500">{news.platform}</span>
+                <div className="flex items-center gap-1.5 text-zinc-700">
+                  <Clock className="w-3 h-3" />
+                  <span className="fos-label text-zinc-700">{news.date}</span>
+                </div>
+              </div>
+              <h4 className="text-xs font-black text-white mb-2 uppercase tracking-tight">{news.title}</h4>
+              <p className="text-xs text-zinc-500 leading-relaxed">{news.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Per-campaign angles */}
+      <div>
+        <div className="flex items-center gap-3 mb-5">
+          <Megaphone className="w-4 h-4 text-blue-400" />
+          <h3 className="text-sm font-black text-white uppercase tracking-tight">Campaign Marketing Angles</h3>
+        </div>
+        <div className="space-y-3">
+          {links.map(link => (
+            <div key={link.id} className="fos-card p-5 fos-accent-line pl-7 hover:border-zinc-700 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-black text-white uppercase tracking-tight">{link.brandName}</span>
+                <span className="fos-label text-zinc-600">{link.platform}</span>
+              </div>
+              <p className="text-xs text-zinc-500 italic leading-relaxed">"{link.intelligence.marketingAngle}"</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Settings ─────────────────────────────────────────────
+const SystemConfig = () => {
+  const [toggles, setToggles] = useState({
+    immutableLock: true,
+    autoDisclosure: true,
+    nodeObfuscation: false,
+  });
+
+  return (
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24 lg:pb-0">
+      <div>
+        <h2 className="text-4xl font-black text-white tracking-tighter fos-heading">System Config</h2>
+        <p className="fos-label text-zinc-600 mt-2 italic">Infrastructure_Control_Panel</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-8 space-y-8">
+          {/* Node Infrastructure */}
+          <section className="fos-card p-8">
+            <div className="flex items-center gap-3 mb-7">
+              <Cpu className="w-5 h-5 text-blue-400" />
+              <h3 className="text-lg font-black text-white uppercase tracking-tight">Node Infrastructure</h3>
+            </div>
+            <div className="space-y-3">
+              {systemNodes.map(node => (
+                <div key={node.id} className="p-5 bg-black border border-zinc-800/60 rounded-2xl flex items-center justify-between group hover:border-blue-500/20 transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="fos-pulse-dot" />
+                    <div>
+                      <p className="text-sm font-black text-white tracking-widest fos-mono">{node.id}</p>
+                      <p className="fos-label text-zinc-700 mt-1">Load: {node.load} · Region: {node.region}</p>
+                    </div>
+                  </div>
+                  <div className="text-right flex items-center gap-4">
+                    <p className="text-xs font-black text-blue-400 fos-mono">{node.ping}</p>
+                    <button
+                      onClick={() => toast.success(`${node.id} re-synced`)}
+                      className="text-[9px] font-black text-zinc-700 uppercase tracking-widest hover:text-white transition-colors fos-mono px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 rounded-lg"
+                    >
+                      Re_Sync
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* API Integration Vault */}
+          <section className="fos-card p-8">
+            <div className="flex items-center gap-3 mb-7">
+              <Key className="w-5 h-5 text-emerald-400" />
+              <h3 className="text-lg font-black text-white uppercase tracking-tight">API Integration Vault</h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {apiIntegrations.map(api => (
+                <div key={api.network} className="p-5 bg-black border border-zinc-800/60 rounded-2xl group hover:border-emerald-500/20 transition-all">
+                  <div className="flex justify-between items-start mb-4">
+                    <p className="text-xs font-black text-white uppercase tracking-tight">{api.network}</p>
+                    <StatusBadge status={api.status} />
+                  </div>
+                  <code className="text-[10px] text-zinc-700 block mb-4 fos-mono">{api.key}</code>
+                  <button
+                    onClick={() => toast.info('Feature coming soon', { description: 'API key management will be available in the next release.' })}
+                    className="w-full py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-[9px] font-black text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all uppercase tracking-widest fos-mono"
+                  >
+                    Update_Key
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <div className="lg:col-span-4 space-y-8">
+          {/* Security Layer */}
+          <section className="fos-card p-7">
+            <div className="flex items-center gap-3 mb-7">
+              <Lock className="w-5 h-5 text-rose-400" />
+              <h3 className="text-lg font-black text-white uppercase tracking-tight">Security Layer</h3>
+            </div>
+            <div className="space-y-4">
+              {[
+                { key: 'immutableLock' as const, label: 'Immutable Link Lock', desc: 'Prevents deletion of active nodes' },
+                { key: 'autoDisclosure' as const, label: 'Auto-Disclosure Scan', desc: 'AI-driven FTC compliance check' },
+                { key: 'nodeObfuscation' as const, label: 'Node Obfuscation', desc: 'Dynamic IP-rotation layer' },
+              ].map(item => (
+                <div
+                  key={item.key}
+                  className={`flex items-center justify-between p-4 bg-black border border-zinc-800/60 rounded-2xl ${!toggles[item.key] ? 'opacity-50' : ''}`}
+                >
+                  <div>
+                    <p className="text-[10px] font-black text-white uppercase tracking-tight leading-none">{item.label}</p>
+                    <p className="fos-label text-zinc-700 mt-1.5">{item.desc}</p>
+                  </div>
+                  <button
+                    onClick={() => setToggles(t => ({ ...t, [item.key]: !t[item.key] }))}
+                    className={`w-10 h-5 rounded-full flex items-center px-1 transition-all ${toggles[item.key] ? 'fos-toggle-on' : 'fos-toggle-off'}`}
+                  >
+                    <div className={`w-3 h-3 rounded-full transition-all ${toggles[item.key] ? 'bg-emerald-500 ml-auto' : 'bg-zinc-600'}`} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* System Identity */}
+          <section className="fos-card p-7 text-center">
+            <p className="fos-label text-zinc-700 mb-6">System Identity</p>
+            <div className="w-16 h-16 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center font-black text-white text-2xl shadow-2xl fos-glow-blue mb-5">
+              JD
+            </div>
+            <p className="text-lg font-black text-white tracking-tight uppercase fos-heading leading-none">JD_PRO_ADMIN</p>
+            <p className="fos-label text-zinc-700 mt-2">ID: FOS_992_X_ALPHA</p>
+            <div className="grid grid-cols-2 gap-3 mt-6">
+              <button
+                onClick={() => toast.info('Feature coming soon')}
+                className="py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-[9px] font-black text-zinc-500 uppercase tracking-widest hover:text-white transition-colors fos-mono"
+              >
+                Edit_Profile
+              </button>
+              <button
+                onClick={() => toast.info('Feature coming soon')}
+                className="py-2.5 bg-rose-950/30 border border-rose-900/30 rounded-xl text-[9px] font-black text-rose-500 uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all fos-mono"
+              >
+                Sign_Out
+              </button>
+            </div>
+          </section>
+
+          {/* Danger Zone */}
+          <section className="p-5 bg-rose-500/5 border border-rose-500/10 rounded-2xl">
+            <div className="flex items-center gap-2 fos-label text-rose-500 mb-4">
+              <AlertCircle className="w-3.5 h-3.5" />
+              Danger Zone
+            </div>
+            <button
+              onClick={() => toast.error('Action blocked', { description: 'Immutable Link Lock is active. Disable in Security Layer first.' })}
+              className="w-full py-3 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white text-[9px] font-black uppercase rounded-xl transition-all border border-rose-500/20 fos-mono"
+            >
+              Purge_Global_Redirect_Map
+            </button>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Dashboard Component ──────────────────────────────
+export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+  const [selectedLink, setSelectedLink] = useState<AffiliateLink | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [links, setLinks] = useState<AffiliateLink[]>(initialLinks);
+
+  const handleSelectLink = useCallback((link: AffiliateLink) => {
+    setSelectedLink(link);
+    setActiveTab('vault');
+  }, []);
+
+  const handleAddLink = useCallback((link: AffiliateLink) => {
+    setLinks(prev => [link, ...prev]);
+  }, []);
+
+  const handleUpdateLink = useCallback((updated: AffiliateLink) => {
+    setLinks(prev => prev.map(l => l.id === updated.id ? updated : l));
+    setSelectedLink(updated);
+  }, []);
+
+  const navItems = [
+    { id: 'dashboard' as ActiveTab, label: 'Overview', icon: LayoutDashboard },
+    { id: 'vault' as ActiveTab, label: 'The Vault', icon: ShieldCheck },
+    { id: 'intelligence' as ActiveTab, label: 'Intelligence', icon: BookOpen },
+  ];
+
+  const pageTitle = () => {
+    if (activeTab === 'vault' && selectedLink) return selectedLink.brandName;
+    if (activeTab === 'vault') return 'Vault';
+    if (activeTab === 'intelligence') return 'Intelligence';
+    if (activeTab === 'settings') return 'Config';
+    return 'Overview';
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-zinc-300 selection:bg-blue-500/30 selection:text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+
+      {/* Add Link Modal */}
+      {showAddModal && (
+        <AddLinkModal
+          onClose={() => setShowAddModal(false)}
+          onAdd={handleAddLink}
+        />
+      )}
+
+      {/* ── Sidebar ── */}
+      <aside className="fixed left-0 top-0 bottom-0 w-72 bg-zinc-950 border-r border-zinc-900 hidden md:flex flex-col z-50" style={{ backgroundImage: 'radial-gradient(ellipse 120% 60% at 0% 0%, rgba(37,99,235,0.08) 0%, transparent 70%)' }}>
+        {/* Logo */}
+        <div className="p-8 pb-0">
+          <div className="flex items-center gap-4 group cursor-default">
+            <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center fos-glow-blue transition-all group-hover:scale-105 shrink-0">
+              <Zap className="w-6 h-6 text-white fill-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black text-white tracking-tighter leading-none fos-heading">FinesseOS</h1>
+              <p className="fos-label text-zinc-700 mt-2 italic">Inevitable_Action_Layer</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 px-5 mt-10 space-y-2">
+          {navItems.map(item => (
+            <NavItem
+              key={item.id}
+              icon={item.icon}
+              label={item.label}
+              active={activeTab === item.id}
+              onClick={() => { setActiveTab(item.id); setSelectedLink(null); }}
+            />
+          ))}
+        </nav>
+
+        {/* Bottom */}
+        <div className="p-5 border-t border-zinc-900">
+          <button
+            onClick={() => { setActiveTab('settings'); setSelectedLink(null); }}
+            className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all group hover:bg-zinc-900 ${activeTab === 'settings' ? 'text-white bg-zinc-900' : 'text-zinc-600'}`}
+          >
+            <Settings className={`w-5 h-5 transition-transform duration-500 ${activeTab === 'settings' ? 'rotate-90' : 'group-hover:rotate-90'}`} />
+            <span className="fos-label">Sys_Config</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* ── Mobile Nav ── */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-2xl border-t border-zinc-900 h-20 flex items-center justify-around px-4 z-40">
+        {navItems.map(item => (
+          <MobileNavItem
+            key={item.id}
+            icon={item.icon}
+            label={item.label}
+            active={activeTab === item.id}
+            onClick={() => { setActiveTab(item.id); setSelectedLink(null); }}
+          />
+        ))}
+        <MobileNavItem
+          icon={Settings}
+          label="Config"
+          active={activeTab === 'settings'}
+          onClick={() => { setActiveTab('settings'); setSelectedLink(null); }}
+        />
+      </nav>
+
+      {/* ── Main Content ── */}
+      <main className="md:ml-72 p-5 lg:p-10 pt-8 min-h-screen">
+        {/* Header */}
+        <header className="hidden md:flex items-center justify-between mb-12 gap-6">
+          <div className="animate-in slide-in-from-left-6 duration-500">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="fos-pulse-dot" />
+              <span className="fos-label text-zinc-600">System_State: Initialized_Link-First</span>
+            </div>
+            <h1 className="text-5xl font-black text-white tracking-tighter leading-none fos-heading">
+              {pageTitle()}
+              <span className="text-blue-600 opacity-20 select-none"> _</span>
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-3 bg-zinc-950/80 border border-zinc-900 p-2.5 rounded-2xl backdrop-blur-md">
+            <div className="px-5 py-3 bg-black rounded-xl border border-zinc-800/60 flex items-center gap-3 group focus-within:border-blue-500/40 transition-all">
+              <Search className="w-4 h-4 text-zinc-700 group-focus-within:text-blue-400 transition-colors" />
+              <input
+                type="text"
+                placeholder="Search campaigns..."
+                className="bg-transparent text-[11px] font-bold text-zinc-300 focus:outline-none w-52 placeholder:text-zinc-800 uppercase tracking-widest fos-mono"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="text-zinc-600 hover:text-white transition-colors">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all active:scale-95 fos-glow-blue"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => { setActiveTab('settings'); setSelectedLink(null); }}
+              className="w-12 h-12 bg-zinc-800 hover:bg-blue-600 rounded-xl flex items-center justify-center font-black text-white transition-all border border-zinc-700 text-sm fos-heading"
+            >
+              JD
+            </button>
+          </div>
+        </header>
+
+        {/* Content */}
+        {activeTab === 'dashboard' && <DashboardOverview links={links} />}
+        {activeTab === 'vault' && !selectedLink && (
+          <CampaignVault
+            links={links}
+            searchQuery={searchQuery}
+            onSelectLink={handleSelectLink}
+            onAddLink={() => setShowAddModal(true)}
+          />
+        )}
+        {activeTab === 'vault' && selectedLink && (
+          <LinkExplorer
+            link={selectedLink}
+            onBack={() => setSelectedLink(null)}
+            onUpdate={handleUpdateLink}
+          />
+        )}
+        {activeTab === 'intelligence' && <IntelligenceHub links={links} />}
+        {activeTab === 'settings' && <SystemConfig />}
+
+        {/* Footer */}
+        <footer className="mt-24 pt-10 border-t border-zinc-900 hidden md:flex justify-between items-center text-zinc-700">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center border border-zinc-900">
+              <Zap className="w-5 h-5 text-zinc-800" />
+            </div>
+            <p className="fos-label">FinesseOS.pro — Campaign-Centric Architecture v2.0</p>
+          </div>
+          <div className="flex items-center gap-8 fos-label">
+            <span className="flex items-center gap-2 text-emerald-500">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              SSL_Node_Active
+            </span>
+            <span className="hover:text-blue-400 cursor-pointer transition-colors">Infrastructure_Pulse</span>
+          </div>
+        </footer>
+      </main>
+    </div>
+  );
+}
