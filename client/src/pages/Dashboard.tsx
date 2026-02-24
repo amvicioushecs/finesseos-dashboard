@@ -61,6 +61,16 @@ import {
   Link2,
   Upload,
   PlusCircle,
+  Plug,
+  Webhook,
+  Mail,
+  BarChart3,
+  ShoppingCart,
+  Share2,
+  CheckCheck,
+  XCircle,
+  AlertTriangle,
+  ChevronDown,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { initialLinks, systemNodes, apiIntegrations, intelligenceNews, type AffiliateLink, type Asset } from '@/lib/data';
@@ -68,7 +78,7 @@ import { initialLinks, systemNodes, apiIntegrations, intelligenceNews, type Affi
 const genId = () => Math.random().toString(36).slice(2, 8);
 
 // ─── Types ────────────────────────────────────────────────
-type ActiveTab = 'dashboard' | 'vault' | 'intelligence' | 'settings';
+type ActiveTab = 'dashboard' | 'vault' | 'intelligence' | 'integrations' | 'settings';
 
 // ─── Utility ──────────────────────────────────────────────
 const copyToClipboard = (text: string, label = 'Copied') => {
@@ -1450,6 +1460,193 @@ const IntelligenceHub = ({ links }: { links: AffiliateLink[] }) => {
   );
 };
 
+// ─── Integrations ────────────────────────────────────────
+type IntegrationStatus = 'connected' | 'disconnected' | 'pending' | 'error';
+
+interface Integration {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  status: IntegrationStatus;
+  icon: React.ElementType;
+  color: string;
+  lastSync?: string;
+  metrics?: string;
+}
+
+const integrationData: Integration[] = [
+  // Affiliate Networks
+  { id: 'shopify', name: 'Shopify Partners', description: 'Track referrals, commissions & payouts from Shopify affiliate program', category: 'Affiliate Networks', status: 'connected', icon: ShoppingCart, color: 'text-emerald-400', lastSync: '2 min ago', metrics: '$1,248 earned' },
+  { id: 'amazon', name: 'Amazon Associates', description: 'Sync Amazon affiliate earnings, product links, and conversion data', category: 'Affiliate Networks', status: 'pending', icon: ShoppingCart, color: 'text-amber-400', lastSync: 'Awaiting auth' },
+  { id: 'clickfunnels', name: 'ClickFunnels', description: 'Import funnel performance, commission tiers, and affiliate dashboard data', category: 'Affiliate Networks', status: 'connected', icon: TrendingUp, color: 'text-blue-400', lastSync: '15 min ago', metrics: '$2,100 earned' },
+  { id: 'impact', name: 'Impact Radius', description: 'Connect to Impact.com for cross-network affiliate tracking and reporting', category: 'Affiliate Networks', status: 'disconnected', icon: Target, color: 'text-zinc-400' },
+  { id: 'shareasale', name: 'ShareASale', description: 'Pull ShareASale merchant data, click reports, and commission history', category: 'Affiliate Networks', status: 'disconnected', icon: Share2, color: 'text-zinc-400' },
+  { id: 'cj', name: 'CJ Affiliate', description: 'Integrate CJ publisher account for real-time earnings and link management', category: 'Affiliate Networks', status: 'disconnected', icon: Link2, color: 'text-zinc-400' },
+  // Analytics
+  { id: 'ga4', name: 'Google Analytics 4', description: 'Import GA4 traffic, conversion events, and audience data into FinesseOS', category: 'Analytics', status: 'connected', icon: BarChart3, color: 'text-orange-400', lastSync: '5 min ago', metrics: '12.4K sessions' },
+  { id: 'gtm', name: 'Google Tag Manager', description: 'Sync GTM container events and affiliate click triggers automatically', category: 'Analytics', status: 'disconnected', icon: Webhook, color: 'text-zinc-400' },
+  { id: 'hotjar', name: 'Hotjar', description: 'Overlay heatmaps and session recordings on your affiliate landing pages', category: 'Analytics', status: 'disconnected', icon: Activity, color: 'text-zinc-400' },
+  // Social Platforms
+  { id: 'tiktok', name: 'TikTok for Business', description: 'Pull TikTok video performance, CTR, and affiliate link click data', category: 'Social Platforms', status: 'connected', icon: Megaphone, color: 'text-pink-400', lastSync: '1 hr ago', metrics: '2.4K clicks' },
+  { id: 'instagram', name: 'Instagram / Meta', description: 'Connect Meta Business Suite for Reels and Stories affiliate analytics', category: 'Social Platforms', status: 'pending', icon: Megaphone, color: 'text-purple-400', lastSync: 'Awaiting auth' },
+  { id: 'youtube', name: 'YouTube Studio', description: 'Import YouTube video analytics and affiliate link performance from descriptions', category: 'Social Platforms', status: 'disconnected', icon: Activity, color: 'text-zinc-400' },
+  { id: 'pinterest', name: 'Pinterest', description: 'Sync Pinterest pin performance and affiliate product link clicks', category: 'Social Platforms', status: 'disconnected', icon: Share2, color: 'text-zinc-400' },
+  // Email & CRM
+  { id: 'klaviyo', name: 'Klaviyo', description: 'Sync email campaign performance, open rates, and affiliate link clicks', category: 'Email & CRM', status: 'connected', icon: Mail, color: 'text-green-400', lastSync: '30 min ago', metrics: '26% open rate' },
+  { id: 'mailchimp', name: 'Mailchimp', description: 'Import Mailchimp audience data and campaign affiliate click metrics', category: 'Email & CRM', status: 'disconnected', icon: Mail, color: 'text-zinc-400' },
+  { id: 'convertkit', name: 'ConvertKit', description: 'Connect ConvertKit sequences and tag-based affiliate automation flows', category: 'Email & CRM', status: 'disconnected', icon: Mail, color: 'text-zinc-400' },
+];
+
+const statusConfig: Record<IntegrationStatus, { label: string; icon: React.ElementType; cls: string }> = {
+  connected: { label: 'Connected', icon: CheckCheck, cls: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
+  disconnected: { label: 'Disconnected', icon: XCircle, cls: 'text-zinc-500 bg-zinc-700/30 border-zinc-700/30' },
+  pending: { label: 'Pending', icon: AlertTriangle, cls: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
+  error: { label: 'Error', icon: AlertCircle, cls: 'text-rose-400 bg-rose-500/10 border-rose-500/20' },
+};
+
+const IntegrationCard = ({ integration }: { integration: Integration }) => {
+  const cfg = statusConfig[integration.status];
+  const StatusIcon = cfg.icon;
+  const Icon = integration.icon;
+  const isConnected = integration.status === 'connected';
+  const isPending = integration.status === 'pending';
+
+  return (
+    <div className="fos-card p-5 group hover:border-blue-500/20 transition-all duration-300 flex flex-col gap-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className={`w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0 group-hover:border-zinc-600 transition-all`}>
+            <Icon className={`w-5 h-5 ${integration.color}`} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-black text-white uppercase tracking-tight truncate">{integration.name}</p>
+            {integration.lastSync && (
+              <p className="fos-label text-zinc-500 mt-0.5 truncate">{isConnected ? `Synced ${integration.lastSync}` : integration.lastSync}</p>
+            )}
+          </div>
+        </div>
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest fos-mono shrink-0 ${cfg.cls}`}>
+          <StatusIcon className="w-2.5 h-2.5" />
+          {cfg.label}
+        </span>
+      </div>
+
+      <p className="text-[11px] text-zinc-400 leading-relaxed line-clamp-2">{integration.description}</p>
+
+      {integration.metrics && (
+        <div className="px-3 py-2 bg-zinc-800/60 rounded-xl border border-zinc-700">
+          <p className="fos-label text-blue-400">{integration.metrics}</p>
+        </div>
+      )}
+
+      <div className="flex gap-2 mt-auto">
+        {isConnected ? (
+          <>
+            <button
+              onClick={() => toast.success(`${integration.name} re-synced`, { description: 'Data refreshed successfully.' })}
+              className="flex-1 py-2 bg-zinc-700 border border-zinc-600 rounded-xl text-[9px] font-black text-zinc-300 hover:text-white hover:bg-zinc-600 transition-all uppercase tracking-widest fos-mono"
+            >
+              Re_Sync
+            </button>
+            <button
+              onClick={() => toast.info('Disconnect flow coming soon')}
+              className="px-3 py-2 bg-rose-950/30 border border-rose-900/30 rounded-xl text-[9px] font-black text-rose-500 hover:bg-rose-500 hover:text-white transition-all uppercase tracking-widest fos-mono"
+            >
+              Disconnect
+            </button>
+          </>
+        ) : isPending ? (
+          <button
+            onClick={() => toast.info('Completing OAuth flow...', { description: 'Redirecting to authorization page.' })}
+            className="flex-1 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[9px] font-black text-amber-400 hover:bg-amber-500 hover:text-black transition-all uppercase tracking-widest fos-mono"
+          >
+            Complete_Auth
+          </button>
+        ) : (
+          <button
+            onClick={() => toast.info(`Connecting to ${integration.name}...`, { description: 'OAuth flow will open in a new window.' })}
+            className="flex-1 py-2 bg-blue-600/10 border border-blue-500/20 rounded-xl text-[9px] font-black text-blue-400 hover:bg-blue-600 hover:text-white transition-all uppercase tracking-widest fos-mono"
+          >
+            Connect
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const IntegrationsHub = () => {
+  const [activeCategory, setActiveCategory] = useState<string>('All');
+  const categories = ['All', 'Affiliate Networks', 'Analytics', 'Social Platforms', 'Email & CRM'];
+  const filtered = activeCategory === 'All' ? integrationData : integrationData.filter(i => i.category === activeCategory);
+  const connectedCount = integrationData.filter(i => i.status === 'connected').length;
+  const pendingCount = integrationData.filter(i => i.status === 'pending').length;
+
+  return (
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24 lg:pb-0">
+      <div>
+        <h2 className="text-4xl font-black text-white tracking-tighter fos-heading">Integrations</h2>
+        <p className="fos-label text-zinc-400 mt-2 italic">Connect_Your_Entire_Stack</p>
+      </div>
+
+      {/* Stats row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Integrations', value: integrationData.length, color: 'text-white' },
+          { label: 'Connected', value: connectedCount, color: 'text-emerald-400' },
+          { label: 'Pending Auth', value: pendingCount, color: 'text-amber-400' },
+          { label: 'Available', value: integrationData.filter(i => i.status === 'disconnected').length, color: 'text-zinc-400' },
+        ].map(stat => (
+          <div key={stat.label} className="fos-card p-5">
+            <p className={`text-3xl font-black ${stat.color} fos-heading`}>{stat.value}</p>
+            <p className="fos-label text-zinc-400 mt-1">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Category filter */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {categories.map(cat => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest fos-mono transition-all ${
+              activeCategory === cat
+                ? 'bg-blue-600 text-white'
+                : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 border border-zinc-700'
+            }`}
+          >
+            {cat === 'All' ? `All (${integrationData.length})` : cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Integration cards grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+        {filtered.map(integration => (
+          <IntegrationCard key={integration.id} integration={integration} />
+        ))}
+      </div>
+
+      {/* Request integration CTA */}
+      <div className="p-6 bg-zinc-800/40 border border-zinc-700 border-dashed rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-black text-white uppercase tracking-tight">Don't see your platform?</p>
+          <p className="fos-label text-zinc-400 mt-1">Request a new integration and we'll prioritize it for the next release.</p>
+        </div>
+        <button
+          onClick={() => toast.info('Integration request sent!', { description: 'We\'ll notify you when it\'s available.' })}
+          className="shrink-0 flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest fos-mono transition-all"
+        >
+          <PlusCircle className="w-4 h-4" />
+          Request_Integration
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // ─── Settings ─────────────────────────────────────────────
 const SystemConfig = () => {
   const [toggles, setToggles] = useState({
@@ -1663,12 +1860,14 @@ export default function Dashboard() {
     { id: 'dashboard' as ActiveTab, label: 'Overview', icon: LayoutDashboard },
     { id: 'vault' as ActiveTab, label: 'The Vault', icon: ShieldCheck },
     { id: 'intelligence' as ActiveTab, label: 'Intelligence', icon: BookOpen },
+    { id: 'integrations' as ActiveTab, label: 'Integrations', icon: Plug },
   ];
 
   const pageTitle = () => {
     if (activeTab === 'vault' && selectedLink) return selectedLink.brandName;
     if (activeTab === 'vault') return 'Vault';
     if (activeTab === 'intelligence') return 'Intelligence';
+    if (activeTab === 'integrations') return 'Integrations';
     if (activeTab === 'settings') return 'Config';
     return 'Overview';
   };
@@ -1841,6 +2040,7 @@ export default function Dashboard() {
           />
         )}
         {activeTab === 'intelligence' && <IntelligenceHub links={links} />}
+        {activeTab === 'integrations' && <IntegrationsHub />}
         {activeTab === 'settings' && <SystemConfig />}
 
         {/* Footer */}
