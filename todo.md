@@ -85,3 +85,4 @@
 - [x] Create Terms & Conditions page at /terms
 - [x] Create Privacy Policy page at /privacy
 - [x] Add footer links to Terms and Privacy on Landing.tsx
+- [x] Shorten meta description to under 160 characters (now 140 chars)
