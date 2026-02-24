@@ -21,6 +21,8 @@ import {
   Star,
   Menu,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { getLoginUrl } from '@/const';
 import { useAuth } from '@/_core/hooks/useAuth';
@@ -72,6 +74,154 @@ const FeatureCard = ({
     <p className="text-zinc-300 text-xs leading-relaxed">{description}</p>
   </div>
 );
+
+// ─── Features Carousel ──────────────────────────────────
+const FEATURES = [
+  {
+    icon: BrainCircuit,
+    title: 'AI Does the Research',
+    description: 'Paste your link. Get keywords, buyer personas, marketing angles, and content ideas — all in seconds. No research required.',
+    accent: true,
+  },
+  {
+    icon: Shield,
+    title: 'Compliance on Autopilot',
+    description: 'AI writes your FTC disclosures and checks platform rules automatically. You stay protected without thinking about it.',
+    accent: false,
+  },
+  {
+    icon: Layers,
+    title: 'Your Files, All in One Place',
+    description: 'Drag and drop your banners, images, and copy into each campaign. No more hunting through Google Drive or your desktop.',
+    accent: false,
+  },
+  {
+    icon: Target,
+    title: 'Know Where to Promote',
+    description: 'AI tells you exactly which platforms — TikTok, YouTube, Instagram, email — will work best for each affiliate program.',
+    accent: false,
+  },
+  {
+    icon: Users,
+    title: 'Know Exactly Who to Target',
+    description: 'Get 4 detailed buyer personas per campaign — who they are, what they want, and how to talk to them on each platform.',
+    accent: false,
+  },
+  {
+    icon: TrendingUp,
+    title: 'See All Your Campaigns at Once',
+    description: "One dashboard to see all your keywords, personas, and strategies across every affiliate program you're running.",
+    accent: false,
+  },
+  {
+    icon: Link2,
+    title: 'One Link = One Campaign Workspace',
+    description: 'Every affiliate link gets its own organized workspace with everything you need to promote it successfully.',
+    accent: false,
+  },
+  {
+    icon: FileText,
+    title: 'Content Ideas Ready to Go',
+    description: "Get 6 content ideas per campaign — hooks, angles, and formats already tailored to the platforms you're targeting.",
+    accent: false,
+  },
+  {
+    icon: Lock,
+    title: 'Secure & Private',
+    description: 'Your nodes, your data. Enterprise-grade security with per-user isolation. Nothing shared, nothing leaked.',
+    accent: false,
+  },
+];
+
+const SLIDES_PER_VIEW = 3;
+
+const FeaturesCarousel = () => {
+  const [current, setCurrent] = useState(0);
+  const total = FEATURES.length;
+  const maxIndex = total - SLIDES_PER_VIEW;
+
+  // Auto-advance every 4 seconds, pause on hover
+  const [paused, setPaused] = useState(false);
+  useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => {
+      setCurrent(c => (c >= maxIndex ? 0 : c + 1));
+    }, 4000);
+    return () => clearInterval(id);
+  }, [paused, maxIndex]);
+
+  const prev = () => setCurrent(c => (c <= 0 ? maxIndex : c - 1));
+  const next = () => setCurrent(c => (c >= maxIndex ? 0 : c + 1));
+
+  return (
+    <div className="max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="text-center mb-16">
+        <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 text-[35px]" style={{ fontFamily: "'Inter', sans-serif" }}>Features</p>
+        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          Everything you need to win.
+        </h2>
+        <p className="text-zinc-200 text-lg mt-4 max-w-xl mx-auto" style={{ fontFamily: "'Inter', sans-serif" }}>
+          FinesseOS handles the research, compliance, and organization — so you can focus on promoting.
+        </p>
+      </div>
+
+      {/* Carousel track */}
+      <div
+        className="relative overflow-hidden"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        <div
+          className="flex transition-transform duration-500 ease-in-out gap-5"
+          style={{ transform: `translateX(calc(-${current} * (100% / ${SLIDES_PER_VIEW} + 20px / ${SLIDES_PER_VIEW})))` }}
+        >
+          {FEATURES.map((f, i) => (
+            <div key={i} className="shrink-0" style={{ width: `calc((100% - ${(SLIDES_PER_VIEW - 1) * 20}px) / ${SLIDES_PER_VIEW})` }}>
+              <FeatureCard icon={f.icon} title={f.title} description={f.description} accent={f.accent} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="flex items-center justify-center gap-4 mt-10">
+        <button
+          onClick={prev}
+          className="w-10 h-10 rounded-full border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-500 flex items-center justify-center text-zinc-300 hover:text-white transition-all active:scale-95"
+          aria-label="Previous feature"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+
+        {/* Dots */}
+        <div className="flex gap-2">
+          {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              className={cn(
+                'rounded-full transition-all duration-300',
+                i === current
+                  ? 'w-6 h-2 bg-blue-500'
+                  : 'w-2 h-2 bg-zinc-600 hover:bg-zinc-400'
+              )}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+
+        <button
+          onClick={next}
+          className="w-10 h-10 rounded-full border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-500 flex items-center justify-center text-zinc-300 hover:text-white transition-all active:scale-95"
+          aria-label="Next feature"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 // ─── Step Card ────────────────────────────────────────────
 const StepCard = ({
@@ -402,66 +552,7 @@ export default function Landing() {
 
       {/* ── Features ── */}
       <section id="features" className="py-24 px-6 border-t border-zinc-800">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 text-[35px]" style={{ fontFamily: "'Inter', sans-serif" }}>Features</p>
-            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Everything you need to win.
-            </h2>
-            <p className="text-zinc-200 text-lg mt-4 max-w-xl mx-auto" style={{ fontFamily: "'Inter', sans-serif" }}>
-              FinesseOS handles the research, compliance, and organization — so you can focus on promoting.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <FeatureCard
-              icon={BrainCircuit}
-              title="AI Does the Research"
-              description="Paste your link. Get keywords, buyer personas, marketing angles, and content ideas — all in seconds. No research required."
-              accent
-            />
-            <FeatureCard
-              icon={Shield}
-              title="Compliance on Autopilot"
-              description="AI writes your FTC disclosures and checks platform rules automatically. You stay protected without thinking about it."
-            />
-            <FeatureCard
-              icon={Layers}
-              title="Your Files, All in One Place"
-              description="Drag and drop your banners, images, and copy into each campaign. No more hunting through Google Drive or your desktop."
-            />
-            <FeatureCard
-              icon={Target}
-              title="Know Where to Promote"
-              description="AI tells you exactly which platforms — TikTok, YouTube, Instagram, email — will work best for each affiliate program."
-            />
-            <FeatureCard
-              icon={Users}
-              title="Know Exactly Who to Target"
-              description="Get 4 detailed buyer personas per campaign — who they are, what they want, and how to talk to them on each platform."
-            />
-            <FeatureCard
-              icon={TrendingUp}
-              title="See All Your Campaigns at Once"
-              description="One dashboard to see all your keywords, personas, and strategies across every affiliate program you're running."
-            />
-            <FeatureCard
-              icon={Link2}
-              title="One Link = One Campaign Workspace"
-              description="Every affiliate link gets its own organized workspace with everything you need to promote it successfully."
-            />
-            <FeatureCard
-              icon={FileText}
-              title="Content Ideas Ready to Go"
-              description="Get 6 content ideas per campaign — hooks, angles, and formats already tailored to the platforms you're targeting."
-            />
-            <FeatureCard
-              icon={Lock}
-              title="Secure & Private"
-              description="Your nodes, your data. Enterprise-grade security with per-user isolation. Nothing shared, nothing leaked."
-            />
-          </div>
-        </div>
+        <FeaturesCarousel />      
       </section>
 
       {/* ── Social Proof ── */}

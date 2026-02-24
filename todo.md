@@ -95,3 +95,4 @@
 - [x] Replace Integrations frontend mock data and placeholder toasts with real tRPC calls
 - [x] Write vitest tests for integrations router (8 tests passing)
 - [x] Remove blinking cursor suffix and System_State label from dashboard header
+- [x] Convert Features section on landing page into an interactive carousel
