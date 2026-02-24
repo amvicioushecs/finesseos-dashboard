@@ -2235,9 +2235,12 @@ export default function Dashboard() {
         {/* Footer */}
         <footer className="mt-24 pt-10 border-t border-zinc-700 hidden md:flex justify-between items-center text-zinc-400">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center border border-zinc-700">
-              <Zap className="w-5 h-5 text-zinc-400" />
-            </div>
+            <img
+              src="https://files.manuscdn.com/user_upload_by_module/session_file/94821429/gqrEeJIZhkgsBgdj.png"
+              alt="FinesseOS"
+              className="w-10 h-10 rounded-xl"
+              style={{ mixBlendMode: 'screen', filter: 'drop-shadow(0 0 8px rgba(96,165,250,0.5)) brightness(1.1)' }}
+            />
             <p className="fos-label">FinesseOS.pro — Campaign-Centric Architecture v2.0</p>
           </div>
           <div className="flex items-center gap-8 fos-label">

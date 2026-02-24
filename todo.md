@@ -103,3 +103,5 @@
 - [x] Remove "Enter the OS" CTA button from landing page navbar
 - [x] Fix Edit_Profile button — open real profile edit modal
 - [x] Fix Sign_Out button — call real logout mutation
+- [x] Replace avatar/initials div in dashboard header with FinesseOS F logo image
+- [x] Update all favicon files with the newly provided icon
