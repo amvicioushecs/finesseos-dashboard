@@ -89,3 +89,31 @@ export const nodeAssets = mysqlTable("nodeAssets", {
 
 export type NodeAsset = typeof nodeAssets.$inferSelect;
 export type InsertNodeAsset = typeof nodeAssets.$inferInsert;
+
+// ─── User Integrations ────────────────────────────────────────────────────────
+// Stores per-user connection state for each external platform integration.
+// API keys are stored encrypted. OAuth tokens stored in metadataJson.
+
+export const userIntegrations = mysqlTable("userIntegrations", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  // Which integration (matches integrationId in the static catalog, e.g. 'shopify', 'ga4')
+  integrationId: varchar("integrationId", { length: 64 }).notNull(),
+  // Connection state
+  status: mysqlEnum("status", ["connected", "disconnected", "pending", "error"]).default("disconnected").notNull(),
+  // Credentials — API key stored as plain text (encrypt at application layer if needed)
+  apiKey: text("apiKey"),
+  // OAuth tokens and any extra metadata (JSON)
+  metadataJson: text("metadataJson"),
+  // Last successful sync timestamp
+  lastSyncAt: timestamp("lastSyncAt"),
+  // Live metrics pulled from the platform (JSON: { label: string, value: string }[])
+  metricsJson: text("metricsJson"),
+  // Error message if status === 'error'
+  errorMessage: text("errorMessage"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserIntegration = typeof userIntegrations.$inferSelect;
+export type InsertUserIntegration = typeof userIntegrations.$inferInsert;

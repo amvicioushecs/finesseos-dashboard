@@ -1461,127 +1461,259 @@ const IntelligenceHub = ({ links }: { links: AffiliateLink[] }) => {
 };
 
 // ─── Integrations ────────────────────────────────────────
+// Icon + color catalog (client-side only — no mock status data)
 type IntegrationStatus = 'connected' | 'disconnected' | 'pending' | 'error';
 
-interface Integration {
+const INTEGRATION_UI: Record<string, { icon: React.ElementType; color: string; category: string }> = {
+  shopify:      { icon: ShoppingCart, color: 'text-emerald-400', category: 'Affiliate Networks' },
+  amazon:       { icon: ShoppingCart, color: 'text-amber-400',   category: 'Affiliate Networks' },
+  clickfunnels: { icon: TrendingUp,   color: 'text-blue-400',    category: 'Affiliate Networks' },
+  impact:       { icon: Target,       color: 'text-zinc-400',    category: 'Affiliate Networks' },
+  shareasale:   { icon: Share2,       color: 'text-zinc-400',    category: 'Affiliate Networks' },
+  cj:           { icon: Link2,        color: 'text-zinc-400',    category: 'Affiliate Networks' },
+  ga4:          { icon: BarChart3,    color: 'text-orange-400',  category: 'Analytics' },
+  gtm:          { icon: Webhook,      color: 'text-zinc-400',    category: 'Analytics' },
+  hotjar:       { icon: Activity,     color: 'text-zinc-400',    category: 'Analytics' },
+  googleads:    { icon: BarChart2,    color: 'text-blue-400',    category: 'Analytics' },
+  tiktok:       { icon: Megaphone,    color: 'text-pink-400',    category: 'Social Platforms' },
+  meta:         { icon: Megaphone,    color: 'text-purple-400',  category: 'Social Platforms' },
+  youtube:      { icon: Activity,     color: 'text-red-400',     category: 'Social Platforms' },
+  pinterest:    { icon: Share2,       color: 'text-rose-400',    category: 'Social Platforms' },
+  klaviyo:      { icon: Mail,         color: 'text-green-400',   category: 'Email & CRM' },
+  mailchimp:    { icon: Mail,         color: 'text-yellow-400',  category: 'Email & CRM' },
+  convertkit:   { icon: Mail,         color: 'text-orange-400',  category: 'Email & CRM' },
+};
+
+const statusConfig: Record<IntegrationStatus, { label: string; icon: React.ElementType; cls: string }> = {
+  connected:    { label: 'Connected',    icon: CheckCheck,     cls: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
+  disconnected: { label: 'Disconnected', icon: XCircle,        cls: 'text-zinc-500 bg-zinc-700/30 border-zinc-700/30' },
+  pending:      { label: 'Pending',      icon: AlertTriangle,  cls: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
+  error:        { label: 'Error',        icon: AlertCircle,    cls: 'text-rose-400 bg-rose-500/10 border-rose-500/20' },
+};
+
+type LiveIntegration = {
   id: string;
   name: string;
   description: string;
-  category: string;
   status: IntegrationStatus;
-  icon: React.ElementType;
-  color: string;
-  lastSync?: string;
-  metrics?: string;
-}
-
-const integrationData: Integration[] = [
-  // Affiliate Networks
-  { id: 'shopify', name: 'Shopify Partners', description: 'Track referrals, commissions & payouts from Shopify affiliate program', category: 'Affiliate Networks', status: 'connected', icon: ShoppingCart, color: 'text-emerald-400', lastSync: '2 min ago', metrics: '$1,248 earned' },
-  { id: 'amazon', name: 'Amazon Associates', description: 'Sync Amazon affiliate earnings, product links, and conversion data', category: 'Affiliate Networks', status: 'pending', icon: ShoppingCart, color: 'text-amber-400', lastSync: 'Awaiting auth' },
-  { id: 'clickfunnels', name: 'ClickFunnels', description: 'Import funnel performance, commission tiers, and affiliate dashboard data', category: 'Affiliate Networks', status: 'connected', icon: TrendingUp, color: 'text-blue-400', lastSync: '15 min ago', metrics: '$2,100 earned' },
-  { id: 'impact', name: 'Impact Radius', description: 'Connect to Impact.com for cross-network affiliate tracking and reporting', category: 'Affiliate Networks', status: 'disconnected', icon: Target, color: 'text-zinc-400' },
-  { id: 'shareasale', name: 'ShareASale', description: 'Pull ShareASale merchant data, click reports, and commission history', category: 'Affiliate Networks', status: 'disconnected', icon: Share2, color: 'text-zinc-400' },
-  { id: 'cj', name: 'CJ Affiliate', description: 'Integrate CJ publisher account for real-time earnings and link management', category: 'Affiliate Networks', status: 'disconnected', icon: Link2, color: 'text-zinc-400' },
-  // Analytics
-  { id: 'ga4', name: 'Google Analytics 4', description: 'Import GA4 traffic, conversion events, and audience data into FinesseOS', category: 'Analytics', status: 'connected', icon: BarChart3, color: 'text-orange-400', lastSync: '5 min ago', metrics: '12.4K sessions' },
-  { id: 'gtm', name: 'Google Tag Manager', description: 'Sync GTM container events and affiliate click triggers automatically', category: 'Analytics', status: 'disconnected', icon: Webhook, color: 'text-zinc-400' },
-  { id: 'hotjar', name: 'Hotjar', description: 'Overlay heatmaps and session recordings on your affiliate landing pages', category: 'Analytics', status: 'disconnected', icon: Activity, color: 'text-zinc-400' },
-  // Social Platforms
-  { id: 'tiktok', name: 'TikTok for Business', description: 'Pull TikTok video performance, CTR, and affiliate link click data', category: 'Social Platforms', status: 'connected', icon: Megaphone, color: 'text-pink-400', lastSync: '1 hr ago', metrics: '2.4K clicks' },
-  { id: 'instagram', name: 'Instagram / Meta', description: 'Connect Meta Business Suite for Reels and Stories affiliate analytics', category: 'Social Platforms', status: 'pending', icon: Megaphone, color: 'text-purple-400', lastSync: 'Awaiting auth' },
-  { id: 'youtube', name: 'YouTube Studio', description: 'Import YouTube video analytics and affiliate link performance from descriptions', category: 'Social Platforms', status: 'disconnected', icon: Activity, color: 'text-zinc-400' },
-  { id: 'pinterest', name: 'Pinterest', description: 'Sync Pinterest pin performance and affiliate product link clicks', category: 'Social Platforms', status: 'disconnected', icon: Share2, color: 'text-zinc-400' },
-  // Email & CRM
-  { id: 'klaviyo', name: 'Klaviyo', description: 'Sync email campaign performance, open rates, and affiliate link clicks', category: 'Email & CRM', status: 'connected', icon: Mail, color: 'text-green-400', lastSync: '30 min ago', metrics: '26% open rate' },
-  { id: 'mailchimp', name: 'Mailchimp', description: 'Import Mailchimp audience data and campaign affiliate click metrics', category: 'Email & CRM', status: 'disconnected', icon: Mail, color: 'text-zinc-400' },
-  { id: 'convertkit', name: 'ConvertKit', description: 'Connect ConvertKit sequences and tag-based affiliate automation flows', category: 'Email & CRM', status: 'disconnected', icon: Mail, color: 'text-zinc-400' },
-];
-
-const statusConfig: Record<IntegrationStatus, { label: string; icon: React.ElementType; cls: string }> = {
-  connected: { label: 'Connected', icon: CheckCheck, cls: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
-  disconnected: { label: 'Disconnected', icon: XCircle, cls: 'text-zinc-500 bg-zinc-700/30 border-zinc-700/30' },
-  pending: { label: 'Pending', icon: AlertTriangle, cls: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
-  error: { label: 'Error', icon: AlertCircle, cls: 'text-rose-400 bg-rose-500/10 border-rose-500/20' },
+  lastSyncAt: string | null;
+  metrics: Array<{ label: string; value: string }>;
+  errorMessage: string | null;
+  hasApiKey: boolean;
+  docsUrl: string;
+  authType: string;
 };
 
-const IntegrationCard = ({ integration }: { integration: Integration }) => {
-  const cfg = statusConfig[integration.status];
-  const StatusIcon = cfg.icon;
-  const Icon = integration.icon;
-  const isConnected = integration.status === 'connected';
-  const isPending = integration.status === 'pending';
+// Connect modal — collects API key and calls trpc.integrations.connect
+const ConnectModal = ({
+  integration,
+  onClose,
+  onConnected,
+}: {
+  integration: LiveIntegration;
+  onClose: () => void;
+  onConnected: () => void;
+}) => {
+  const [apiKey, setApiKey] = useState('');
+  const connect = trpc.integrations.connect.useMutation({
+    onSuccess: () => {
+      toast.success(`${integration.name} connected`, { description: 'API key saved. Integration is now active.' });
+      onConnected();
+      onClose();
+    },
+    onError: (err) => {
+      toast.error('Connection failed', { description: err.message });
+    },
+  });
 
   return (
-    <div className="fos-card p-5 group hover:border-blue-500/20 transition-all duration-300 flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className={`w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0 group-hover:border-zinc-600 transition-all`}>
-            <Icon className={`w-5 h-5 ${integration.color}`} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs font-black text-white uppercase tracking-tight truncate">{integration.name}</p>
-            {integration.lastSync && (
-              <p className="fos-label text-zinc-500 mt-0.5 truncate">{isConnected ? `Synced ${integration.lastSync}` : integration.lastSync}</p>
-            )}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <div className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl p-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-black text-white uppercase tracking-tight">Connect {integration.name}</p>
+          <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors"><X className="w-4 h-4" /></button>
+        </div>
+        <p className="text-xs text-zinc-400 leading-relaxed">
+          Enter your {integration.name} API key. You can find it in your account settings.
+          {' '}<a href={integration.docsUrl} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">View docs →</a>
+        </p>
+        <div className="space-y-2">
+          <label className="fos-label text-zinc-400 uppercase tracking-widest">API Key</label>
+          <div className="relative">
+            <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+            <input
+              type="password"
+              value={apiKey}
+              onChange={e => setApiKey(e.target.value)}
+              placeholder="Paste your API key here"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl pl-9 pr-4 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-blue-500 transition-colors"
+            />
           </div>
         </div>
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest fos-mono shrink-0 ${cfg.cls}`}>
-          <StatusIcon className="w-2.5 h-2.5" />
-          {cfg.label}
-        </span>
-      </div>
-
-      <p className="text-[11px] text-zinc-400 leading-relaxed line-clamp-2">{integration.description}</p>
-
-      {integration.metrics && (
-        <div className="px-3 py-2 bg-zinc-800/60 rounded-xl border border-zinc-700">
-          <p className="fos-label text-blue-400">{integration.metrics}</p>
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-[9px] font-black text-zinc-400 hover:text-white transition-all uppercase tracking-widest fos-mono"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => connect.mutate({ integrationId: integration.id, apiKey })}
+            disabled={!apiKey.trim() || connect.isPending}
+            className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-[9px] font-black transition-all uppercase tracking-widest fos-mono"
+          >
+            {connect.isPending ? 'Connecting...' : 'Save & Connect'}
+          </button>
         </div>
-      )}
-
-      <div className="flex gap-2 mt-auto">
-        {isConnected ? (
-          <>
-            <button
-              onClick={() => toast.success(`${integration.name} re-synced`, { description: 'Data refreshed successfully.' })}
-              className="flex-1 py-2 bg-zinc-700 border border-zinc-600 rounded-xl text-[9px] font-black text-zinc-300 hover:text-white hover:bg-zinc-600 transition-all uppercase tracking-widest fos-mono"
-            >
-              Re_Sync
-            </button>
-            <button
-              onClick={() => toast.info('Disconnect flow coming soon')}
-              className="px-3 py-2 bg-rose-950/30 border border-rose-900/30 rounded-xl text-[9px] font-black text-rose-500 hover:bg-rose-500 hover:text-white transition-all uppercase tracking-widest fos-mono"
-            >
-              Disconnect
-            </button>
-          </>
-        ) : isPending ? (
-          <button
-            onClick={() => toast.info('Completing OAuth flow...', { description: 'Redirecting to authorization page.' })}
-            className="flex-1 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[9px] font-black text-amber-400 hover:bg-amber-500 hover:text-black transition-all uppercase tracking-widest fos-mono"
-          >
-            Complete_Auth
-          </button>
-        ) : (
-          <button
-            onClick={() => toast.info(`Connecting to ${integration.name}...`, { description: 'OAuth flow will open in a new window.' })}
-            className="flex-1 py-2 bg-blue-600/10 border border-blue-500/20 rounded-xl text-[9px] font-black text-blue-400 hover:bg-blue-600 hover:text-white transition-all uppercase tracking-widest fos-mono"
-          >
-            Connect
-          </button>
-        )}
       </div>
     </div>
+  );
+};
+
+const IntegrationCard = ({
+  integration,
+  onRefresh,
+}: {
+  integration: LiveIntegration;
+  onRefresh: () => void;
+}) => {
+  const [showConnect, setShowConnect] = useState(false);
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false);
+  const ui = INTEGRATION_UI[integration.id] ?? { icon: Plug, color: 'text-zinc-400', category: 'Other' };
+  const Icon = ui.icon;
+  const cfg = statusConfig[integration.status];
+  const StatusIcon = cfg.icon;
+  const isConnected = integration.status === 'connected';
+
+  const resync = trpc.integrations.resync.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${integration.name} synced`, { description: `Last sync: ${new Date(data.syncedAt).toLocaleTimeString()}` });
+      onRefresh();
+    },
+    onError: (err) => toast.error('Sync failed', { description: err.message }),
+  });
+
+  const disconnect = trpc.integrations.disconnect.useMutation({
+    onSuccess: () => {
+      toast.success(`${integration.name} disconnected`);
+      setConfirmDisconnect(false);
+      onRefresh();
+    },
+    onError: (err) => toast.error('Disconnect failed', { description: err.message }),
+  });
+
+  const lastSync = integration.lastSyncAt
+    ? new Date(integration.lastSyncAt).toLocaleString()
+    : null;
+
+  return (
+    <>
+      {showConnect && (
+        <ConnectModal
+          integration={integration}
+          onClose={() => setShowConnect(false)}
+          onConnected={onRefresh}
+        />
+      )}
+      {confirmDisconnect && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm bg-zinc-900 border border-zinc-700 rounded-2xl p-6 space-y-5">
+            <p className="text-sm font-black text-white uppercase tracking-tight">Disconnect {integration.name}?</p>
+            <p className="text-xs text-zinc-400">This will remove your API key and all connection data. You can reconnect at any time.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmDisconnect(false)} className="flex-1 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-[9px] font-black text-zinc-400 hover:text-white transition-all uppercase tracking-widest fos-mono">Cancel</button>
+              <button
+                onClick={() => disconnect.mutate({ integrationId: integration.id })}
+                disabled={disconnect.isPending}
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white rounded-xl text-[9px] font-black transition-all uppercase tracking-widest fos-mono"
+              >
+                {disconnect.isPending ? 'Disconnecting...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="fos-card p-5 group hover:border-blue-500/20 transition-all duration-300 flex flex-col gap-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0 group-hover:border-zinc-600 transition-all">
+              <Icon className={`w-5 h-5 ${isConnected ? ui.color : 'text-zinc-500'}`} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-black text-white uppercase tracking-tight truncate">{integration.name}</p>
+              {lastSync && <p className="fos-label text-zinc-500 mt-0.5 truncate">Synced {lastSync}</p>}
+            </div>
+          </div>
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest fos-mono shrink-0 ${cfg.cls}`}>
+            <StatusIcon className="w-2.5 h-2.5" />
+            {cfg.label}
+          </span>
+        </div>
+
+        <p className="text-[11px] text-zinc-400 leading-relaxed line-clamp-2">{integration.description}</p>
+
+        {integration.metrics.length > 0 && (
+          <div className="px-3 py-2 bg-zinc-800/60 rounded-xl border border-zinc-700 flex flex-wrap gap-3">
+            {integration.metrics.map(m => (
+              <div key={m.label}>
+                <p className="fos-label text-zinc-500">{m.label}</p>
+                <p className="text-xs font-black text-blue-400">{m.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {integration.errorMessage && (
+          <p className="text-[10px] text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl px-3 py-2">{integration.errorMessage}</p>
+        )}
+
+        <div className="flex gap-2 mt-auto">
+          {isConnected ? (
+            <>
+              <button
+                onClick={() => resync.mutate({ integrationId: integration.id })}
+                disabled={resync.isPending}
+                className="flex-1 py-2 bg-zinc-700 border border-zinc-600 rounded-xl text-[9px] font-black text-zinc-300 hover:text-white hover:bg-zinc-600 disabled:opacity-50 transition-all uppercase tracking-widest fos-mono"
+              >
+                {resync.isPending ? 'Syncing...' : 'Re_Sync'}
+              </button>
+              <button
+                onClick={() => setConfirmDisconnect(true)}
+                className="px-3 py-2 bg-rose-950/30 border border-rose-900/30 rounded-xl text-[9px] font-black text-rose-500 hover:bg-rose-500 hover:text-white transition-all uppercase tracking-widest fos-mono"
+              >
+                Disconnect
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setShowConnect(true)}
+              className="flex-1 py-2 bg-blue-600/10 border border-blue-500/20 rounded-xl text-[9px] font-black text-blue-400 hover:bg-blue-600 hover:text-white transition-all uppercase tracking-widest fos-mono"
+            >
+              Connect
+            </button>
+          )}
+        </div>
+      </div>
+    </>
   );
 };
 
 const IntegrationsHub = () => {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const categories = ['All', 'Affiliate Networks', 'Analytics', 'Social Platforms', 'Email & CRM'];
-  const filtered = activeCategory === 'All' ? integrationData : integrationData.filter(i => i.category === activeCategory);
-  const connectedCount = integrationData.filter(i => i.status === 'connected').length;
-  const pendingCount = integrationData.filter(i => i.status === 'pending').length;
+  const utils = trpc.useUtils();
+
+  const { data: integrations = [], isLoading } = trpc.integrations.list.useQuery();
+
+  const filtered = activeCategory === 'All'
+    ? integrations
+    : integrations.filter(i => (INTEGRATION_UI[i.id]?.category ?? 'Other') === activeCategory);
+
+  const connectedCount = integrations.filter(i => i.status === 'connected').length;
+  const pendingCount = integrations.filter(i => i.status === 'pending').length;
+  const availableCount = integrations.filter(i => i.status === 'disconnected').length;
+
+  const handleRefresh = () => utils.integrations.list.invalidate();
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24 lg:pb-0">
@@ -1593,13 +1725,13 @@ const IntegrationsHub = () => {
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total Integrations', value: integrationData.length, color: 'text-white' },
+          { label: 'Total Integrations', value: integrations.length, color: 'text-white' },
           { label: 'Connected', value: connectedCount, color: 'text-emerald-400' },
           { label: 'Pending Auth', value: pendingCount, color: 'text-amber-400' },
-          { label: 'Available', value: integrationData.filter(i => i.status === 'disconnected').length, color: 'text-zinc-400' },
+          { label: 'Available', value: availableCount, color: 'text-zinc-400' },
         ].map(stat => (
           <div key={stat.label} className="fos-card p-5">
-            <p className={`text-3xl font-black ${stat.color} fos-heading`}>{stat.value}</p>
+            <p className={`text-3xl font-black ${stat.color} fos-heading`}>{isLoading ? '—' : stat.value}</p>
             <p className="fos-label text-zinc-400 mt-1">{stat.label}</p>
           </div>
         ))}
@@ -1617,17 +1749,25 @@ const IntegrationsHub = () => {
                 : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 border border-zinc-700'
             }`}
           >
-            {cat === 'All' ? `All (${integrationData.length})` : cat}
+            {cat === 'All' ? `All (${integrations.length})` : cat}
           </button>
         ))}
       </div>
 
       {/* Integration cards grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-        {filtered.map(integration => (
-          <IntegrationCard key={integration.id} integration={integration} />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="fos-card p-5 h-48 animate-pulse bg-zinc-800/40" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          {filtered.map(integration => (
+            <IntegrationCard key={integration.id} integration={integration as LiveIntegration} onRefresh={handleRefresh} />
+          ))}
+        </div>
+      )}
 
       {/* Request integration CTA */}
       <div className="p-6 bg-zinc-800/40 border border-zinc-700 border-dashed rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -1635,13 +1775,13 @@ const IntegrationsHub = () => {
           <p className="text-sm font-black text-white uppercase tracking-tight">Don't see your platform?</p>
           <p className="fos-label text-zinc-400 mt-1">Request a new integration and we'll prioritize it for the next release.</p>
         </div>
-        <button
-          onClick={() => toast.info('Integration request sent!', { description: 'We\'ll notify you when it\'s available.' })}
+        <a
+          href="mailto:integrations@finesseos.pro?subject=Integration%20Request"
           className="shrink-0 flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest fos-mono transition-all"
         >
           <PlusCircle className="w-4 h-4" />
           Request_Integration
-        </button>
+        </a>
       </div>
     </div>
   );

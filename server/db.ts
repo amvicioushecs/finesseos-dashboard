@@ -1,6 +1,6 @@
 import { eq, and, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, affiliateNodes, nodeAssets, InsertAffiliateNode, InsertNodeAsset } from "../drizzle/schema";
+import { InsertUser, users, affiliateNodes, nodeAssets, InsertAffiliateNode, InsertNodeAsset, userIntegrations } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -298,4 +298,83 @@ export async function deleteAsset(assetId: number, userId: number): Promise<stri
   if (rows.length === 0) throw new Error("Asset not found");
   await db.delete(nodeAssets).where(eq(nodeAssets.id, assetId));
   return rows[0].s3Key;
+}
+
+// ─── User Integration queries ─────────────────────────────────────────────────
+
+export type FrontendIntegration = {
+  id: number;
+  integrationId: string;
+  status: 'connected' | 'disconnected' | 'pending' | 'error';
+  lastSyncAt: string | null;
+  metrics: Array<{ label: string; value: string }>;
+  errorMessage: string | null;
+  hasApiKey: boolean;
+};
+
+export async function getUserIntegrations(userId: number): Promise<FrontendIntegration[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select().from(userIntegrations).where(eq(userIntegrations.userId, userId));
+  return rows.map(rowToFrontendIntegration);
+}
+
+export async function getUserIntegration(userId: number, integrationId: string): Promise<FrontendIntegration | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(userIntegrations)
+    .where(and(eq(userIntegrations.userId, userId), eq(userIntegrations.integrationId, integrationId)))
+    .limit(1);
+  return rows.length > 0 ? rowToFrontendIntegration(rows[0]) : null;
+}
+
+export async function upsertUserIntegration(userId: number, integrationId: string, data: {
+  status: 'connected' | 'disconnected' | 'pending' | 'error';
+  apiKey?: string | null;
+  metadataJson?: string | null;
+  lastSyncAt?: Date | null;
+  metricsJson?: string | null;
+  errorMessage?: string | null;
+}): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(userIntegrations).values({
+    userId,
+    integrationId,
+    status: data.status,
+    apiKey: data.apiKey ?? null,
+    metadataJson: data.metadataJson ?? null,
+    lastSyncAt: data.lastSyncAt ?? null,
+    metricsJson: data.metricsJson ?? null,
+    errorMessage: data.errorMessage ?? null,
+  }).onDuplicateKeyUpdate({
+    set: {
+      status: data.status,
+      ...(data.apiKey !== undefined ? { apiKey: data.apiKey } : {}),
+      ...(data.metadataJson !== undefined ? { metadataJson: data.metadataJson } : {}),
+      ...(data.lastSyncAt !== undefined ? { lastSyncAt: data.lastSyncAt } : {}),
+      ...(data.metricsJson !== undefined ? { metricsJson: data.metricsJson } : {}),
+      ...(data.errorMessage !== undefined ? { errorMessage: data.errorMessage } : {}),
+    },
+  });
+}
+
+export async function disconnectUserIntegration(userId: number, integrationId: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(userIntegrations)
+    .set({ status: 'disconnected', apiKey: null, metadataJson: null, lastSyncAt: null, metricsJson: null, errorMessage: null })
+    .where(and(eq(userIntegrations.userId, userId), eq(userIntegrations.integrationId, integrationId)));
+}
+
+function rowToFrontendIntegration(row: typeof userIntegrations.$inferSelect): FrontendIntegration {
+  return {
+    id: row.id,
+    integrationId: row.integrationId,
+    status: row.status,
+    lastSyncAt: row.lastSyncAt ? row.lastSyncAt.toISOString() : null,
+    metrics: parseJson<Array<{ label: string; value: string }>>(row.metricsJson, []),
+    errorMessage: row.errorMessage ?? null,
+    hasApiKey: !!row.apiKey,
+  };
 }

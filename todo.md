@@ -89,3 +89,8 @@
 - [x] Replace footer bolt/Zap icon with FinesseOS F logo image
 - [x] Build Integrations tab in dashboard with affiliate network, analytics, and social channel cards
 - [x] Wire Integrations tab into dashboard navigation
+- [x] Audit and remove all mock/static data from the codebase
+- [x] Build DB schema: userIntegrations table added
+- [x] Build tRPC procedures for integrations (list, connect, disconnect, resync, get)
+- [x] Replace Integrations frontend mock data and placeholder toasts with real tRPC calls
+- [x] Write vitest tests for integrations router (8 tests passing)
