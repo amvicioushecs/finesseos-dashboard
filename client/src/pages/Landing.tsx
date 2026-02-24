@@ -315,7 +315,7 @@ export default function Landing() {
   const loginUrl = isAuthenticated ? '/dashboard' : getLoginUrl();
 
   return (
-    <div className="min-h-screen bg-black text-zinc-200" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+    <div className="min-h-screen text-zinc-200" style={{ fontFamily: "'Space Grotesk', sans-serif", backgroundColor: '#0f1117' }}>
 
       {/* ── Navbar ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-zinc-800" style={{backgroundColor: '#1a1918'}}>
@@ -463,7 +463,7 @@ export default function Landing() {
       </section>
 
       {/* ── Problem Section ── */}
-      <section className="py-24 px-6 border-t border-zinc-800">
+      <section className="py-24 px-6 border-t border-zinc-800" style={{ backgroundColor: '#0f1117' }}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 text-[35px]" style={{ fontFamily: "'Inter', sans-serif" }}>The Problem</p>
@@ -518,7 +518,7 @@ export default function Landing() {
       </section>
 
       {/* ── How It Works ── */}
-      <section id="how-it-works" className="py-24 px-6 border-t border-zinc-800">
+      <section id="how-it-works" className="py-24 px-6 border-t border-zinc-800" style={{ backgroundColor: '#0c0f18' }}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 text-[35px]" style={{ fontFamily: "'Inter', sans-serif" }}>How It Works</p>
@@ -551,12 +551,12 @@ export default function Landing() {
       </section>
 
       {/* ── Features ── */}
-      <section id="features" className="py-24 px-6 border-t border-zinc-800">
+      <section id="features" className="py-24 px-6 border-t border-zinc-800" style={{ backgroundColor: '#0f1117' }}>
         <FeaturesCarousel />      
       </section>
 
       {/* ── Social Proof ── */}
-      <section className="py-24 px-6 border-t border-zinc-800">
+      <section className="py-24 px-6 border-t border-zinc-800" style={{ backgroundColor: '#0c0f18' }}>
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 text-[35px]" style={{ fontFamily: "'Inter', sans-serif" }}>What You Get Per Campaign</p>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-16" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Every link. Fully loaded.</h2>
@@ -581,7 +581,7 @@ export default function Landing() {
       </section>
 
       {/* ── Pricing ── */}
-      <section id="pricing" className="py-24 px-6 border-t border-zinc-800">
+      <section id="pricing" className="py-24 px-6 border-t border-zinc-800" style={{ backgroundColor: '#0f1117' }}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 text-[35px]" style={{ fontFamily: "'Inter', sans-serif" }}>Pricing</p>
@@ -635,7 +635,7 @@ export default function Landing() {
       </section>
 
       {/* ── Final CTA ── */}
-      <section className="py-32 px-6 border-t border-zinc-800 relative overflow-hidden">
+      <section className="py-32 px-6 border-t border-zinc-800 relative overflow-hidden" style={{ backgroundColor: '#0c0f18' }}>
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[100px]" />
         </div>
@@ -671,7 +671,7 @@ export default function Landing() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-zinc-800 py-12 px-6">
+      <footer className="border-t border-zinc-800 py-12 px-6" style={{ backgroundColor: '#090b12' }}>
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">

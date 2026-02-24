@@ -96,3 +96,4 @@
 - [x] Write vitest tests for integrations router (8 tests passing)
 - [x] Remove blinking cursor suffix and System_State label from dashboard header
 - [x] Convert Features section on landing page into an interactive carousel
+- [x] Fix background colors on all landing page sections below the hero
