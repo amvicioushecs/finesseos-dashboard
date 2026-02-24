@@ -82,3 +82,6 @@
 - [x] Increase text sizes and contrast across all pages
 - [x] Apply visual editor font size changes: section labels to 35px, hero H1 capped at 64px
 - [x] Apply brand gradient (purple→blue→teal) to hero CTA button
+- [x] Create Terms & Conditions page at /terms
+- [x] Create Privacy Policy page at /privacy
+- [x] Add footer links to Terms and Privacy on Landing.tsx

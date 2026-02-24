@@ -591,12 +591,14 @@ export default function Landing() {
               <span className="text-zinc-400 font-mono text-xs">.pro</span>
             </div>
 
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-6 flex-wrap justify-center">
               {['Dashboard', 'Pricing', 'Docs', 'Support'].map(link => (
                 <a key={link} href="#" className="text-zinc-400 hover:text-zinc-200 text-xs transition-colors font-mono">
                   {link}
                 </a>
               ))}
+              <a href="/terms" className="text-zinc-400 hover:text-zinc-200 text-xs transition-colors font-mono">Terms</a>
+              <a href="/privacy" className="text-zinc-400 hover:text-zinc-200 text-xs transition-colors font-mono">Privacy</a>
             </div>
 
             <div className="flex items-center gap-2 text-zinc-400 text-xs font-mono">
