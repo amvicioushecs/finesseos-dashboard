@@ -1719,7 +1719,10 @@ export default function Dashboard() {
               alt="FinesseOS"
               className="w-auto transition-all group-hover:scale-105"
               style={{
-                height: '38px',
+                width: '100px',
+                height: '100px',
+                marginLeft: '75px',
+                marginBottom: '-25px',
                 mixBlendMode: 'screen',
                 filter: 'drop-shadow(0 0 12px rgba(96,165,250,0.6)) drop-shadow(0 0 24px rgba(139,92,246,0.3)) brightness(1.15) contrast(1.05)',
               }}
