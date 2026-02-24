@@ -1342,8 +1342,7 @@ const IntelligenceHub = ({ links }: { links: AffiliateLink[] }) => {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24 lg:pb-0">
       <div>
-        <h2 className="text-4xl font-black text-white tracking-tighter fos-heading">Intelligence Hub</h2>
-        <p className="fos-label text-zinc-600 mt-2 italic">AI_Research_Aggregated_Across_All_Nodes</p>
+        <p className="fos-label text-zinc-500 italic">AI_Research_Aggregated_Across_All_Nodes</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1375,11 +1374,11 @@ const IntelligenceHub = ({ links }: { links: AffiliateLink[] }) => {
           <div className="space-y-3">
             {allPersonas.slice(0, 5).map((p, i) => (
               <div key={i} className="p-3.5 bg-zinc-800/60 border border-zinc-700 rounded-xl">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-xs font-black text-white uppercase tracking-tight">{p.name}</p>
-                  <span className="fos-label text-blue-500">{p.brand}</span>
+                <div className="flex items-center justify-between gap-2 mb-1 overflow-hidden">
+                  <p className="text-xs font-black text-white uppercase tracking-tight truncate min-w-0">{p.name}</p>
+                  <span className="fos-label text-blue-500 shrink-0 max-w-[40%] truncate">{p.brand}</span>
                 </div>
-                <p className="text-[10px] text-zinc-400">{p.hook}</p>
+                <p className="text-[10px] text-zinc-400 line-clamp-2 break-words">{p.hook}</p>
               </div>
             ))}
           </div>
