@@ -100,3 +100,4 @@
 - [x] Remove duplicate "Intelligence" label in Intelligence tab header
 - [x] Fix persona Matrix card text overflow/run-off
 - [x] Clean up writing/copy on Node Comms card in dashboard
+- [x] Remove "Enter the OS" CTA button from landing page navbar
