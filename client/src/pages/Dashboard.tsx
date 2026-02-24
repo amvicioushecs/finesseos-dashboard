@@ -1364,12 +1364,12 @@ const IntelligenceHub = ({ links }: { links: AffiliateLink[] }) => {
           </div>
           <div className="space-y-3">
             {allPersonas.slice(0, 5).map((p, i) => (
-              <div key={i} className="p-3.5 bg-zinc-800/60 border border-zinc-700 rounded-xl">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-xs font-black text-white uppercase tracking-tight">{p.name}</p>
-                  <span className="fos-label text-blue-500">{p.brand}</span>
+              <div key={i} className="p-3.5 bg-zinc-800/60 border border-zinc-700 rounded-xl overflow-hidden">
+                <div className="flex items-center justify-between gap-2 mb-1 min-w-0">
+                  <p className="text-xs font-black text-white uppercase tracking-tight truncate min-w-0">{p.name}</p>
+                  <span className="fos-label text-blue-500 shrink-0 truncate max-w-[40%]">{p.brand}</span>
                 </div>
-                <p className="text-[10px] text-zinc-400">{p.hook}</p>
+                <p className="text-[10px] text-zinc-400 line-clamp-2">{p.hook}</p>
               </div>
             ))}
           </div>
