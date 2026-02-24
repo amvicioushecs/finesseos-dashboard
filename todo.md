@@ -94,3 +94,4 @@
 - [x] Build tRPC procedures for integrations (list, connect, disconnect, resync, get)
 - [x] Replace Integrations frontend mock data and placeholder toasts with real tRPC calls
 - [x] Write vitest tests for integrations router (8 tests passing)
+- [x] Remove blinking cursor suffix and System_State label from dashboard header

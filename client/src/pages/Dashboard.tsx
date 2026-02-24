@@ -2119,13 +2119,8 @@ export default function Dashboard() {
         {/* Header */}
         <header className="hidden md:flex items-center justify-between mb-12 gap-6">
           <div className="animate-in slide-in-from-left-6 duration-500">
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className="fos-pulse-dot" />
-              <span className="fos-label text-zinc-400">System_State: Initialized_Link-First</span>
-            </div>
             <h1 className="text-5xl font-black text-white tracking-tighter leading-none fos-heading">
               {pageTitle()}
-              <span className="text-blue-600 opacity-20 select-none"> _</span>
             </h1>
           </div>
 
