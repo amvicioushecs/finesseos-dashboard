@@ -584,9 +584,12 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Zap className="w-3.5 h-3.5 text-white fill-white" />
-              </div>
+              <img
+                src="https://files.manuscdn.com/user_upload_by_module/session_file/94821429/dJARocsDyCOAfmoM.png"
+                alt="FinesseOS"
+                className="w-8 h-8 rounded-lg"
+                style={{ mixBlendMode: 'screen', filter: 'drop-shadow(0 0 6px rgba(96,165,250,0.5))' }}
+              />
               <span className="text-white font-black tracking-tighter">FinesseOS</span>
               <span className="text-zinc-400 font-mono text-xs">.pro</span>
             </div>
