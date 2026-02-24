@@ -99,3 +99,4 @@
 - [x] Fix background colors on all landing page sections below the hero
 - [x] Remove duplicate "Intelligence" label in Intelligence tab header
 - [x] Fix persona Matrix card text overflow/run-off
+- [x] Clean up writing/copy on Node Comms card in dashboard

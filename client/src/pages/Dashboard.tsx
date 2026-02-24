@@ -598,7 +598,7 @@ const CampaignVault = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-4xl font-black text-white tracking-tighter fos-heading">Campaign Vault</h2>
-          <p className="fos-label text-zinc-400 mt-2 italic">Management_Organized_By_Endpoint</p>
+          <p className="fos-label text-zinc-400 mt-2 italic">Organized by affiliate endpoint</p>
         </div>
         <button
           onClick={onAddLink}
@@ -680,7 +680,7 @@ const CampaignVault = ({
                 {link.brandPrimaryColor && (
                   <div className="h-0.5 rounded-full mb-3 opacity-60" style={{ background: `linear-gradient(90deg, ${link.brandPrimaryColor}, transparent)` }} />
                 )}
-                <p className="fos-label text-zinc-400 font-mono text-[9px] truncate">{link.slug}</p>
+                <p className="fos-label text-zinc-400 font-mono text-[9px] truncate" title={link.slug}>/{link.slug}</p>
               </div>
 
               <div className="grid grid-cols-3 gap-2 mb-6">
@@ -696,7 +696,7 @@ const CampaignVault = ({
                   <p className="text-base font-black text-white">{link.assets.length}</p>
                 </div>
                 <div className="bg-zinc-800/60 p-3 rounded-xl border border-zinc-700 text-center">
-                  <p className="fos-label mb-1">Comms</p>
+                  <p className="fos-label mb-1">Commission</p>
                   <p className="text-base font-black text-emerald-400">{link.commission || '—'}</p>
                 </div>
               </div>
@@ -711,7 +711,7 @@ const CampaignVault = ({
                 className="w-full py-4 bg-zinc-800 hover:bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-xl transition-all flex items-center justify-center gap-2.5 active:scale-95 fos-mono group-hover:bg-blue-600"
               >
                 <FolderOpen className="w-4 h-4" />
-                Enter_Workspace
+                Open Workspace
               </button>
             </div>
           ))}
