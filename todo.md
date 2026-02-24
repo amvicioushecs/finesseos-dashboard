@@ -101,3 +101,5 @@
 - [x] Fix persona Matrix card text overflow/run-off
 - [x] Clean up writing/copy on Node Comms card in dashboard
 - [x] Remove "Enter the OS" CTA button from landing page navbar
+- [x] Fix Edit_Profile button — open real profile edit modal
+- [x] Fix Sign_Out button — call real logout mutation

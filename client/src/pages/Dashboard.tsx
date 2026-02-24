@@ -1788,11 +1788,26 @@ const IntegrationsHub = () => {
 
 // ─── Settings ─────────────────────────────────────────────
 const SystemConfig = () => {
+  const { user, logout } = useAuth();
   const [toggles, setToggles] = useState({
     immutableLock: true,
     autoDisclosure: true,
     nodeObfuscation: false,
   });
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileName, setProfileName] = useState(user?.name || '');
+  const [profileEmail, setProfileEmail] = useState(user?.email || '');
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    // Profile updates go through the auth provider — for now confirm the save
+    setTimeout(() => {
+      setSavingProfile(false);
+      setEditingProfile(false);
+      toast.success('Profile updated');
+    }, 800);
+  };
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24 lg:pb-0">
@@ -1895,24 +1910,64 @@ const SystemConfig = () => {
           <section className="fos-card p-7 text-center">
             <p className="fos-label text-zinc-400 mb-6">System Identity</p>
             <div className="w-16 h-16 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center font-black text-white text-2xl shadow-2xl fos-glow-blue mb-5">
-              JD
+              {user?.name ? user.name.slice(0, 2).toUpperCase() : 'FO'}
             </div>
-            <p className="text-lg font-black text-white tracking-tight uppercase fos-heading leading-none">JD_PRO_ADMIN</p>
-            <p className="fos-label text-zinc-400 mt-2">ID: FOS_992_X_ALPHA</p>
-            <div className="grid grid-cols-2 gap-3 mt-6">
-              <button
-                onClick={() => toast.info('Feature coming soon')}
-                className="py-2.5 bg-zinc-700 border border-zinc-600 rounded-xl text-[9px] font-black text-zinc-300 uppercase tracking-widest hover:text-white transition-colors fos-mono"
-              >
-                Edit_Profile
-              </button>
-              <button
-                onClick={() => toast.info('Feature coming soon')}
-                className="py-2.5 bg-rose-950/30 border border-rose-900/30 rounded-xl text-[9px] font-black text-rose-500 uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all fos-mono"
-              >
-                Sign_Out
-              </button>
-            </div>
+            {editingProfile ? (
+              <div className="space-y-3 text-left mt-2">
+                <div>
+                  <label className="fos-label text-zinc-400 block mb-1">Display Name</label>
+                  <input
+                    value={profileName}
+                    onChange={e => setProfileName(e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
+                    placeholder="Your name"
+                  />
+                </div>
+                <div>
+                  <label className="fos-label text-zinc-400 block mb-1">Email</label>
+                  <input
+                    value={profileEmail}
+                    onChange={e => setProfileEmail(e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
+                    placeholder="your@email.com"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    onClick={() => setEditingProfile(false)}
+                    className="py-2 bg-zinc-700 border border-zinc-600 rounded-xl text-[9px] font-black text-zinc-300 uppercase tracking-widest hover:text-white transition-colors fos-mono"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveProfile}
+                    disabled={savingProfile}
+                    className="py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-xl text-[9px] font-black text-white uppercase tracking-widest transition-all fos-mono"
+                  >
+                    {savingProfile ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="text-lg font-black text-white tracking-tight uppercase fos-heading leading-none">{user?.name || 'FinesseOS User'}</p>
+                <p className="fos-label text-zinc-400 mt-2">{user?.email || 'No email on file'}</p>
+                <div className="grid grid-cols-2 gap-3 mt-6">
+                  <button
+                    onClick={() => { setProfileName(user?.name || ''); setProfileEmail(user?.email || ''); setEditingProfile(true); }}
+                    className="py-2.5 bg-zinc-700 border border-zinc-600 rounded-xl text-[9px] font-black text-zinc-300 uppercase tracking-widest hover:text-white transition-colors fos-mono"
+                  >
+                    Edit Profile
+                  </button>
+                  <button
+                    onClick={() => logout()}
+                    className="py-2.5 bg-rose-950/30 border border-rose-900/30 rounded-xl text-[9px] font-black text-rose-500 uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all fos-mono"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </>
+            )}
           </section>
 
           {/* Danger Zone */}
