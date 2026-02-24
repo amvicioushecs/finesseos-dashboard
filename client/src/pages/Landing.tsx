@@ -176,8 +176,8 @@ export default function Landing() {
               src="https://files.manuscdn.com/user_upload_by_module/session_file/94821429/gUEtbVDJTcocGKPG.png"
               alt="FinesseOS"
               style={{
-                height: '40px',
-                width: 'auto',
+                height: '75px',
+                width: '75px',
                 mixBlendMode: 'screen',
                 filter: 'drop-shadow(0 0 12px rgba(96,165,250,0.6)) brightness(1.15) contrast(1.05)',
                 transition: 'filter 0.2s',
