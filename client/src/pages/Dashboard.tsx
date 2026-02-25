@@ -1717,11 +1717,6 @@ const IntegrationsHub = () => {
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24 lg:pb-0">
-      <div>
-        <h2 className="text-4xl font-black text-white tracking-tighter fos-heading">Integrations</h2>
-        <p className="fos-label text-zinc-400 mt-2 italic">Connect_Your_Entire_Stack</p>
-      </div>
-
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
