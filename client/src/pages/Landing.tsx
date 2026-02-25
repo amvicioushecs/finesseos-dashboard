@@ -374,6 +374,14 @@ export default function Landing() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16" style={{background: 'linear-gradient(to right, #1f2b2e, #25253c, #0a0a0f)'}}>
         {/* Background effects */}
         <div className="absolute inset-0 pointer-events-none">
+          {/* Plexus network background */}
+          <img
+            src="https://files.manuscdn.com/user_upload_by_module/session_file/94821429/dGUccNZGxZptbwms.png"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover opacity-20"
+            style={{ mixBlendMode: 'screen' }}
+          />
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[120px]" />
           <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/3 rounded-full blur-[80px]" />
           {/* Grid overlay */}
