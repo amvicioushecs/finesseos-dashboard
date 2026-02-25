@@ -2102,20 +2102,22 @@ export default function Dashboard() {
       <aside className="fixed left-0 top-0 bottom-0 w-72 bg-zinc-900 border-r border-zinc-700 hidden md:flex flex-col z-50" style={{ backgroundImage: 'radial-gradient(ellipse 120% 60% at 0% 0%, rgba(37,99,235,0.08) 0%, transparent 70%)' }}>
         {/* Logo */}
         <div className="p-6 pb-0">
-          <div className="flex items-center gap-3 group cursor-default">
-            <img
-              src="https://files.manuscdn.com/user_upload_by_module/session_file/94821429/gUEtbVDJTcocGKPG.png"
-              alt="FinesseOS"
-              className="w-auto transition-all group-hover:scale-105"
-              style={{
-                width: '100px',
-                height: '100px',
-                marginLeft: '75px',
-                marginBottom: '-25px',
-                mixBlendMode: 'screen',
-                filter: 'drop-shadow(0 0 12px rgba(96,165,250,0.6)) drop-shadow(0 0 24px rgba(139,92,246,0.3)) brightness(1.15) contrast(1.05)',
-              }}
-            />
+          <div className="flex items-center gap-3 group">
+            <a href="/" aria-label="Back to FinesseOS home" className="cursor-pointer">
+              <img
+                src="https://files.manuscdn.com/user_upload_by_module/session_file/94821429/gUEtbVDJTcocGKPG.png"
+                alt="FinesseOS"
+                className="w-auto transition-all group-hover:scale-105 group-hover:drop-shadow-[0_0_20px_rgba(96,165,250,0.9)]"
+                style={{
+                  width: '100px',
+                  height: '100px',
+                  marginLeft: '75px',
+                  marginBottom: '-25px',
+                  mixBlendMode: 'screen',
+                  filter: 'drop-shadow(0 0 12px rgba(96,165,250,0.6)) drop-shadow(0 0 24px rgba(139,92,246,0.3)) brightness(1.15) contrast(1.05)',
+                }}
+              />
+            </a>
           </div>
           <p className="fos-label text-zinc-400 mt-3 italic pl-1">Inevitable_Action_Layer</p>
         </div>
