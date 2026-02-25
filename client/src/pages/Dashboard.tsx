@@ -108,9 +108,10 @@ const NavItem = ({ icon: Icon, label, active, onClick }: {
     onClick={onClick}
     className={`w-full flex items-center gap-5 px-6 py-4 rounded-2xl transition-all duration-300 group relative ${
       active
-        ? 'bg-blue-600 text-white fos-nav-active scale-[1.02]'
-        : 'text-zinc-300 hover:text-white hover:bg-zinc-800'
+        ? 'text-white fos-nav-active scale-[1.02]'
+        : 'text-zinc-300 hover:text-white'
     }`}
+    style={{ backgroundColor: active ? '#2563eb' : '#343846' }}
   >
     {active && (
       <div className="absolute left-0 w-1.5 h-7 bg-white rounded-r-full shadow-[0_0_20px_rgba(255,255,255,0.8)]" />
