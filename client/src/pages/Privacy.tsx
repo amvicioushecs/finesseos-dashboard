@@ -98,10 +98,9 @@ export default function Privacy() {
               <li>Send product updates and marketing communications (you may opt out at any time)</li>
               <li>Detect, investigate, and prevent fraudulent or abusive activity</li>
               <li>Comply with legal obligations</li>
-              <li>Train and improve our AI models using anonymized, aggregated data only</li>
             </ul>
             <p>
-              We do not sell your personal information to third parties. We do not use your submitted affiliate links or generated content to train public AI models without your explicit consent.
+              We do not sell your personal information to third parties. <strong className="text-white">We do not use your data — including affiliate links, campaign content, or usage activity — to train any AI models, public or private.</strong> Your data is used solely to operate the Service on your behalf.
             </p>
           </Section>
 
