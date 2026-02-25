@@ -379,7 +379,7 @@ export default function Landing() {
             src="https://files.manuscdn.com/user_upload_by_module/session_file/94821429/dGUccNZGxZptbwms.png"
             alt=""
             aria-hidden="true"
-            className="absolute top-0 left-0 w-auto h-auto opacity-40"
+            className="absolute top-0 left-0 w-auto h-auto opacity-100"
             style={{ mixBlendMode: 'screen', maxWidth: '70%' }}
           />
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[120px]" />
