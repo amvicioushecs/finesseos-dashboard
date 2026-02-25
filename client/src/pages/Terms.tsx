@@ -2,7 +2,7 @@
 // ============================================================
 
 import { Link } from 'wouter';
-import { ArrowLeft, Zap } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 const LAST_UPDATED = 'February 23, 2026';
 
@@ -29,9 +29,11 @@ export default function Terms() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#1a1918]/95 backdrop-blur-xl border-b border-zinc-800">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb, #06b6d4)' }}>
-              <Zap className="w-3.5 h-3.5 text-white fill-white" />
-            </div>
+            <img
+              src="https://files.manuscdn.com/user_upload_by_module/session_file/94821429/gUEtbVDJTcocGKPG.png"
+              alt="FinesseOS"
+              style={{ width: '32px', height: '32px', mixBlendMode: 'screen', filter: 'drop-shadow(0 0 6px rgba(96,165,250,0.6)) brightness(1.15)' }}
+            />
             <span className="text-white font-black tracking-tighter">FinesseOS</span>
             <span className="text-zinc-400 font-mono text-xs">.pro</span>
           </Link>
