@@ -1,10 +1,18 @@
+import { PROVIDER_CONFIG } from "./providers/config";
+
 export const ENV = {
-  appId: process.env.VITE_APP_ID ?? "",
-  cookieSecret: process.env.JWT_SECRET ?? "",
-  databaseUrl: process.env.DATABASE_URL ?? "",
-  oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
-  ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
-  isProduction: process.env.NODE_ENV === "production",
-  forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
-  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  cookieSecret: PROVIDER_CONFIG.auth.jwtSecret,
+  databaseUrl: PROVIDER_CONFIG.database.url,
+  supabaseUrl: PROVIDER_CONFIG.supabase.url,
+  supabaseAnonKey: PROVIDER_CONFIG.supabase.anonKey,
+  isProduction: PROVIDER_CONFIG.runtime.isProduction,
+  llmApiUrl: PROVIDER_CONFIG.llm.apiUrl,
+  llmApiKey: PROVIDER_CONFIG.llm.apiKey,
+  llmModel: PROVIDER_CONFIG.llm.model,
+  ownerOpenId: PROVIDER_CONFIG.auth.ownerOpenId,
+  storageBucket: PROVIDER_CONFIG.storage.bucket,
+  storageEndpoint: PROVIDER_CONFIG.storage.endpoint,
+  storageAccessKeyId: PROVIDER_CONFIG.storage.accessKeyId,
+  storageSecretAccessKey: PROVIDER_CONFIG.storage.secretAccessKey,
+  storageRegion: PROVIDER_CONFIG.storage.region,
 };

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "TypeSlayer": {
+      "command": "npx",
+      "args": [
+        "typeslayer",
+        "mcp"
+      ]
+    }
+  }
+}

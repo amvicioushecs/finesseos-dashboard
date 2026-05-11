@@ -1,3 +1,5 @@
+import { PROVIDER_CONFIG } from "./_core/providers/config";
+
 /**
  * Brandfetch API helper — fetches brand logo, colors, and metadata from a domain.
  * Used to enrich affiliate campaign nodes with real brand assets.
@@ -106,7 +108,7 @@ function pickBestIcon(logos: BrandfetchLogo[]): string | null {
  * Returns null if the brand is not found or the API call fails.
  */
 export async function fetchBrandData(domain: string): Promise<BrandData | null> {
-  const apiKey = process.env.BRANDFETCH_API_KEY;
+  const apiKey = PROVIDER_CONFIG.integrations.brandfetch.apiKey;
   if (!apiKey) {
     console.warn("[Brandfetch] BRANDFETCH_API_KEY not set — skipping brand lookup");
     return null;

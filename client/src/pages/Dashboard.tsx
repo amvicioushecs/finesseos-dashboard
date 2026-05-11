@@ -18,6 +18,7 @@ import {
 import { useAuth } from '@/_core/hooks/useAuth';
 import { getLoginUrl } from '@/const';
 import { trpc } from '@/lib/trpc';
+import { supabase } from '@/lib/supabase';
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -430,7 +431,75 @@ const AddLinkModal = ({ onClose, onAdd }: {
 
 // ─── Dashboard Overview ────────────────────────────────────
 const DashboardOverview = ({ links }: { links: AffiliateLink[] }) => {
-  // Use real tracked clickCount if available, otherwise fall back to display string parsing
+  const { user } = useAuth();
+  const utils = trpc.useUtils();
+
+  // Fetch actions and metrics from DB
+  const actionsQuery = trpc.system.getActions.useQuery({ limit: 10 }, { enabled: !!user });
+  const metricsQuery = trpc.system.getMetrics.useQuery(undefined, { enabled: !!user });
+
+  const [liveActions, setLiveActions] = useState<any[]>([]);
+  const [liveMetrics, setLiveMetrics] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (actionsQuery.data) setLiveActions(actionsQuery.data);
+  }, [actionsQuery.data]);
+
+  useEffect(() => {
+    if (metricsQuery.data) setLiveMetrics(metricsQuery.data);
+  }, [metricsQuery.data]);
+
+  // Supabase Realtime Subscription
+  useEffect(() => {
+    if (!supabase || !user) return;
+
+    const actionChannel = supabase
+      .channel('realtime:actions')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'actionFeed',
+        filter: `userId=eq.${user.id}`
+      }, (payload) => {
+        setLiveActions(prev => [payload.new, ...prev].slice(0, 15));
+        toast.info(payload.new.title, { 
+          description: payload.new.message,
+          icon: <Zap className="w-4 h-4 text-blue-400" />,
+        });
+      })
+      .subscribe();
+
+    const metricChannel = supabase
+      .channel('realtime:metrics')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'systemMetrics',
+        filter: `userId=eq.${user.id}`
+      }, (payload) => {
+        const newData = payload.new as any;
+        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          setLiveMetrics(prev => {
+            const index = prev.findIndex(m => m.name === newData.name);
+            if (index > -1) {
+              const next = [...prev];
+              next[index] = newData;
+              return next;
+            }
+            return [newData, ...prev];
+          });
+        }
+      })
+      .subscribe();
+
+    return () => {
+      if (supabase) {
+        supabase.removeChannel(actionChannel);
+        supabase.removeChannel(metricChannel);
+      }
+    };
+  }, [user]);
+
   const totalClicks = links.reduce((sum, l) => {
     if (l.clickCount !== undefined) return sum + l.clickCount;
     const n = parseFloat(l.clicks.replace('K', '').replace('k', '')) * (l.clicks.toLowerCase().includes('k') ? 1000 : 1);
@@ -448,6 +517,24 @@ const DashboardOverview = ({ links }: { links: AffiliateLink[] }) => {
     { label: 'System Alerts', value: alertCount.toString(), color: alertCount > 0 ? 'text-rose-400' : 'text-zinc-500', icon: AlertCircle, glow: 'shadow-rose-500/10' },
     { label: 'Est. Earnings', value: `$${totalEarnings.toLocaleString()}`, color: 'text-amber-400', icon: TrendingUp, glow: 'shadow-amber-500/10' },
   ];
+
+  // Default metrics if none in DB
+  const displayMetrics = liveMetrics.length > 0 ? liveMetrics : [
+    { name: 'Global Latency', value: '42ms', category: 'performance' },
+    { name: 'Sync Status', value: 'NODE_SYNCED', category: 'system' },
+    { name: 'Compliance Engine', value: 'ACTIVE', category: 'security' },
+    { name: 'AI Intelligence', value: 'ONLINE', category: 'intelligence' },
+  ];
+
+  const getActionIcon = (type: string) => {
+    switch (type) {
+      case 'node_created': return <PlusCircle className="w-4 h-4 text-blue-400" />;
+      case 'click_detected': return <Zap className="w-4 h-4 text-amber-400" />;
+      case 'integration_connected': return <Plug className="w-4 h-4 text-emerald-400" />;
+      case 'node_alert': return <AlertCircle className="w-4 h-4 text-rose-500" />;
+      default: return <Activity className="w-4 h-4 text-zinc-400" />;
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -468,54 +555,47 @@ const DashboardOverview = ({ links }: { links: AffiliateLink[] }) => {
         {/* Action Feed */}
         <div className="lg:col-span-2">
           <div className="fos-card overflow-hidden">
-              <div className="px-6 py-4 border-b border-zinc-700 flex items-center justify-between">
+            <div className="px-6 py-4 border-b border-zinc-700 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="fos-pulse-dot" />
                 <span className="fos-label text-zinc-300">Inevitable_Action_Feed</span>
               </div>
               <span className="fos-label text-zinc-400">Live</span>
             </div>
-            <div className="divide-y divide-zinc-800/40">
-              {links.filter(l => l.status === 'alert').map(link => (
-                <div key={link.id} className="px-6 py-5 flex items-center justify-between hover:bg-zinc-900/30 transition-all group">
-                  <div className="flex items-center gap-4">
-                    <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-500">
-                      <AlertCircle className="w-4 h-4 animate-pulse" />
+            <div className="divide-y divide-zinc-800/40 max-h-[480px] overflow-y-auto">
+              {liveActions.length > 0 ? (
+                liveActions.map((action, i) => (
+                  <div key={action.id || i} className="px-6 py-5 flex items-center justify-between hover:bg-zinc-900/30 transition-all group animate-in fade-in slide-in-from-left-4 duration-300">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2.5 rounded-xl bg-zinc-800 border border-zinc-700">
+                        {getActionIcon(action.type)}
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-white uppercase tracking-tight leading-none">{action.title}</p>
+                        <p className="fos-label text-zinc-400 mt-1.5">{action.message}</p>
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest fos-mono">
+                      {new Date(action.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="px-6 py-5 flex items-center gap-4 bg-zinc-800/30 opacity-60">
+                    <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500">
+                      <CheckCircle2 className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-sm font-black text-white uppercase tracking-tight leading-none">{link.slug}</p>
-                      <p className="fos-label text-rose-500/70 mt-1.5">Redirect failure — URL returning 404</p>
+                      <p className="text-sm font-black text-white uppercase tracking-tight leading-none">All active nodes optimized</p>
+                      <p className="fos-label text-emerald-500/60 mt-1.5">Intelligence sync active — NODE_SYNCED</p>
                     </div>
                   </div>
-                  <span className="px-3 py-1.5 bg-rose-500/10 text-rose-400 text-[9px] font-black uppercase tracking-widest rounded-lg border border-rose-500/20 fos-mono">
-                    Alert
-                  </span>
-                </div>
-              ))}
-              <div className="px-6 py-5 flex items-center gap-4 bg-zinc-800/30">
-                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-sm font-black text-white uppercase tracking-tight leading-none">All active nodes optimized</p>
-                  <p className="fos-label text-emerald-500/60 mt-1.5">Intelligence sync active — NODE_SYNCED</p>
-                </div>
-              </div>
-              {/* Recent activity */}
-              {links.filter(l => l.status === 'active').slice(0, 2).map(link => (
-                <div key={link.id} className="px-6 py-4 flex items-center justify-between hover:bg-zinc-900/20 transition-all">
-                  <div className="flex items-center gap-4">
-                    <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400">
-                      <Zap className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-zinc-300 uppercase tracking-tight">{link.brandName} — {link.clicks} clicks</p>
-                      <p className="fos-label text-zinc-400 mt-1">Campaign active on {link.platform}</p>
-                    </div>
+                  <div className="px-12 py-12 text-center">
+                    <p className="fos-label text-zinc-500">Waiting for system actions...</p>
                   </div>
-                  <span className="fos-label text-emerald-500">{link.earnings}</span>
-                </div>
-              ))}
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -528,15 +608,10 @@ const DashboardOverview = ({ links }: { links: AffiliateLink[] }) => {
               <h3 className="text-sm font-black text-white uppercase tracking-tight">OS Metrics</h3>
             </div>
             <div className="space-y-3">
-              {[
-                { label: 'Global Latency', value: '42ms', color: 'text-white' },
-                { label: 'Sync Status', value: 'NODE_SYNCED', color: 'text-emerald-400', mono: true },
-                { label: 'Compliance Engine', value: 'ACTIVE', color: 'text-blue-400', mono: true },
-                { label: 'AI Intelligence', value: 'ONLINE', color: 'text-emerald-400', mono: true },
-              ].map((m, i) => (
+              {displayMetrics.map((m, i) => (
                 <div key={i} className="p-3.5 bg-zinc-800/60 border border-zinc-700 rounded-xl flex items-center justify-between">
-                  <p className="fos-label">{m.label}</p>
-                  <p className={`text-xs font-black ${m.color} ${m.mono ? 'fos-mono' : ''}`}>{m.value}</p>
+                  <p className="fos-label">{m.name || m.label}</p>
+                  <p className={`text-xs font-black text-emerald-400 fos-mono`}>{m.value}</p>
                 </div>
               ))}
             </div>

@@ -5,10 +5,9 @@
 **Design Movement:** Brutalist Dark OS / Cyberpunk Terminal
 
 **Core Principles:**
-1. Pure black (#000000) as the substrate — no gray backgrounds, only black and near-black
+1. Pure black (#000000) as the substrate — slate backgrounds, black and near-black
 2. Electric blue (#2563EB / #3B82F6) as the sole accent color — used sparingly for active states, CTAs, and live indicators
 3. Monospaced typography for all system labels, IDs, and status text (JetBrains Mono)
-4. Ultra-black weight display type for all headings (Space Grotesk 900)
 
 **Color Philosophy:**
 - Background: #000000 (pure black)
@@ -44,6 +43,6 @@
 - Toast: slide-in-from-top-10
 
 **Typography System:**
-- Display: Space Grotesk 900 (headings, brand name)
-- Body: Space Grotesk 500/700 (UI text)
+- Display: (headings, brand name)
+- Body: 500/700 (UI text)
 - Mono: JetBrains Mono (system labels, IDs, status codes)

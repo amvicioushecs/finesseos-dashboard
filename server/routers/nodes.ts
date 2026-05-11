@@ -4,16 +4,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
-import {
-  getNodesByUserId,
-  getNodeById,
-  createNode,
-  deleteNode,
-  updateNodeStatus,
-  getAssetsByNodeId,
-  createAsset,
-  deleteAsset,
-} from "../db";
+import { dataProvider } from "../_core/providers";
 import { storagePut } from "../storage";
 import { nanoid } from "nanoid";
 
@@ -22,14 +13,14 @@ import { nanoid } from "nanoid";
 export const nodesRouter = router({
   // List all nodes for the current user
   list: protectedProcedure.query(async ({ ctx }) => {
-    return getNodesByUserId(ctx.user.id);
+    return dataProvider.getNodesByUserId(ctx.user.id);
   }),
 
   // Get a single node by ID
   get: protectedProcedure
     .input(z.object({ nodeId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const node = await getNodeById(input.nodeId, ctx.user.id);
+      const node = await dataProvider.getNodeById(input.nodeId, ctx.user.id);
       if (!node) throw new TRPCError({ code: "NOT_FOUND", message: "Node not found" });
       return node;
     }),
@@ -77,8 +68,19 @@ export const nodesRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const nodeId = await createNode(ctx.user.id, input);
-      const node = await getNodeById(nodeId, ctx.user.id);
+      const nodeId = await dataProvider.createNode(ctx.user.id, input);
+      const node = await dataProvider.getNodeById(nodeId, ctx.user.id);
+      
+      // Log action for realtime feed
+      if (node) {
+        await dataProvider.createAction(ctx.user.id, {
+          type: 'node_created',
+          title: 'Node Created',
+          message: `${node.brandName} affiliate node is now live in your vault.`,
+          metadataJson: { nodeId: node.id, platform: node.platform }
+        });
+      }
+
       return node;
     }),
 
@@ -86,7 +88,7 @@ export const nodesRouter = router({
   getTrackedUrl: protectedProcedure
     .input(z.object({ nodeId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const node = await getNodeById(input.nodeId, ctx.user.id);
+      const node = await dataProvider.getNodeById(input.nodeId, ctx.user.id);
       if (!node) throw new TRPCError({ code: "NOT_FOUND", message: "Node not found" });
       if (!node.trackingId) return { trackedUrl: null };
       return { trackedUrl: `/go/${node.trackingId}` };
@@ -96,7 +98,7 @@ export const nodesRouter = router({
   delete: protectedProcedure
     .input(z.object({ nodeId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      await deleteNode(input.nodeId, ctx.user.id);
+      await dataProvider.deleteNode(input.nodeId, ctx.user.id);
       return { success: true };
     }),
 
@@ -109,7 +111,7 @@ export const nodesRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      await updateNodeStatus(input.nodeId, ctx.user.id, input.status);
+      await dataProvider.updateNodeStatus(input.nodeId, ctx.user.id, input.status);
       return { success: true };
     }),
 
@@ -131,7 +133,7 @@ export const nodesRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       // Verify node belongs to user
-      const node = await getNodeById(input.nodeId, ctx.user.id);
+      const node = await dataProvider.getNodeById(input.nodeId, ctx.user.id);
       if (!node) throw new TRPCError({ code: "NOT_FOUND", message: "Node not found" });
 
       // Enforce 16MB limit
@@ -164,10 +166,10 @@ export const nodesRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const node = await getNodeById(input.nodeId, ctx.user.id);
+      const node = await dataProvider.getNodeById(input.nodeId, ctx.user.id);
       if (!node) throw new TRPCError({ code: "NOT_FOUND", message: "Node not found" });
 
-      const assetId = await createAsset({
+      const assetId = await dataProvider.createAsset({
         nodeId: input.nodeId,
         userId: ctx.user.id,
         filename: input.filename,
@@ -199,7 +201,7 @@ export const nodesRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const node = await getNodeById(input.nodeId, ctx.user.id);
+      const node = await dataProvider.getNodeById(input.nodeId, ctx.user.id);
       if (!node) throw new TRPCError({ code: "NOT_FOUND", message: "Node not found" });
 
       if (input.fileSize > 16 * 1024 * 1024) {
@@ -213,7 +215,7 @@ export const nodesRouter = router({
 
       const { url } = await storagePut(s3Key, buffer, input.mimeType);
 
-      const assetId = await createAsset({
+      const assetId = await dataProvider.createAsset({
         nodeId: input.nodeId,
         userId: ctx.user.id,
         filename: s3Key.split("/").pop() ?? input.filename,
@@ -233,9 +235,9 @@ export const nodesRouter = router({
   listAssets: protectedProcedure
     .input(z.object({ nodeId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const node = await getNodeById(input.nodeId, ctx.user.id);
+      const node = await dataProvider.getNodeById(input.nodeId, ctx.user.id);
       if (!node) throw new TRPCError({ code: "NOT_FOUND", message: "Node not found" });
-      const assets = await getAssetsByNodeId(input.nodeId, ctx.user.id);
+      const assets = await dataProvider.getAssetsByNodeId(input.nodeId, ctx.user.id);
       return assets.map(a => ({
         id: String(a.id),
         name: a.originalName,
@@ -251,7 +253,7 @@ export const nodesRouter = router({
   deleteAsset: protectedProcedure
     .input(z.object({ assetId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      await deleteAsset(input.assetId, ctx.user.id);
+      await dataProvider.deleteAsset(input.assetId, ctx.user.id);
       return { success: true };
     }),
 });

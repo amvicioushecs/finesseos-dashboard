@@ -5,12 +5,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
-import {
-  getUserIntegrations,
-  getUserIntegration,
-  upsertUserIntegration,
-  disconnectUserIntegration,
-} from "../db";
+import { dataProvider } from "../_core/providers";
 
 // ─── Static integration catalog ──────────────────────────────────────────────
 // This is the master list of supported integrations. Connection state lives in DB.
@@ -47,7 +42,7 @@ export type IntegrationId = IntegrationCatalogItem["id"];
 export const integrationsRouter = router({
   // List all integrations (catalog merged with user's DB connection state)
   list: protectedProcedure.query(async ({ ctx }) => {
-    const userConnections = await getUserIntegrations(ctx.user.id);
+    const userConnections = await dataProvider.getUserIntegrations(ctx.user.id);
     const connectionMap = new Map(userConnections.map(c => [c.integrationId, c]));
 
     return INTEGRATION_CATALOG.map(item => {
@@ -80,12 +75,20 @@ export const integrationsRouter = router({
 
       // Store the connection as 'connected' with the provided API key
       // In production, validate the API key against the platform's API before saving
-      await upsertUserIntegration(ctx.user.id, input.integrationId, {
+      await dataProvider.upsertUserIntegration(ctx.user.id, input.integrationId, {
         status: "connected",
         apiKey: input.apiKey,
         lastSyncAt: new Date(),
         metricsJson: null,
         errorMessage: null,
+      });
+
+      // Log action for realtime feed
+      await dataProvider.createAction(ctx.user.id, {
+        type: 'integration_connected',
+        title: 'Platform Connected',
+        message: `${catalogItem.name} has been successfully integrated.`,
+        metadataJson: { integrationId: input.integrationId }
       });
 
       return { success: true, integrationId: input.integrationId };
@@ -95,11 +98,11 @@ export const integrationsRouter = router({
   disconnect: protectedProcedure
     .input(z.object({ integrationId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      const existing = await getUserIntegration(ctx.user.id, input.integrationId);
+      const existing = await dataProvider.getUserIntegration(ctx.user.id, input.integrationId);
       if (!existing || existing.status === "disconnected") {
         throw new TRPCError({ code: "NOT_FOUND", message: "Integration not connected" });
       }
-      await disconnectUserIntegration(ctx.user.id, input.integrationId);
+      await dataProvider.disconnectUserIntegration(ctx.user.id, input.integrationId);
       return { success: true };
     }),
 
@@ -107,13 +110,13 @@ export const integrationsRouter = router({
   resync: protectedProcedure
     .input(z.object({ integrationId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      const existing = await getUserIntegration(ctx.user.id, input.integrationId);
+      const existing = await dataProvider.getUserIntegration(ctx.user.id, input.integrationId);
       if (!existing || existing.status !== "connected") {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Integration is not connected" });
       }
 
       // Update lastSyncAt to now — in production, trigger actual data pull here
-      await upsertUserIntegration(ctx.user.id, input.integrationId, {
+      await dataProvider.upsertUserIntegration(ctx.user.id, input.integrationId, {
         status: "connected",
         lastSyncAt: new Date(),
         errorMessage: null,
@@ -130,7 +133,7 @@ export const integrationsRouter = router({
       if (!catalogItem) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Unknown integration" });
       }
-      const connection = await getUserIntegration(ctx.user.id, input.integrationId);
+      const connection = await dataProvider.getUserIntegration(ctx.user.id, input.integrationId);
       return {
         ...catalogItem,
         status: connection?.status ?? "disconnected",
