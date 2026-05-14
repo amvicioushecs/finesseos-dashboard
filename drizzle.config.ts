@@ -5,12 +5,10 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is required to run drizzle commands");
 }
 
-const isPostgres = connectionString.startsWith("postgres://") || connectionString.startsWith("postgresql://");
-
 export default defineConfig({
-  schema: isPostgres ? "./drizzle/schema.pg.ts" : "./drizzle/schema.ts",
+  schema: "./drizzle/schema.ts",
   out: "./drizzle",
-  dialect: isPostgres ? "postgresql" : "mysql",
+  dialect: "postgresql",
   dbCredentials: {
     url: connectionString,
   },

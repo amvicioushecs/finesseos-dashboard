@@ -28,50 +28,40 @@ export interface IAuthProvider {
 export interface IDataProvider {
   // User operations
   getUserByOpenId(openId: string): Promise<User | undefined>;
-  upsertUser(user: InsertUser): Promise<void>;
+  upsertUser(user: Partial<InsertUser> & { openId: string }): Promise<void>;
 
   // Affiliate Node operations
-  getNodesByUserId(userId: number): Promise<FrontendNode[]>;
-  getNodeById(nodeId: number, userId: number): Promise<FrontendNode | null>;
-  createNode(userId: number, data: any): Promise<number>;
-  deleteNode(nodeId: number, userId: number): Promise<void>;
-  updateNodeStatus(nodeId: number, userId: number, status: 'active' | 'paused' | 'alert'): Promise<void>;
+  getNodesByUserId(userId: string): Promise<FrontendNode[]>;
+  getNodeById(nodeId: string, userId: string): Promise<FrontendNode | null>;
+  createNode(userId: string, data: any): Promise<string>;
+  deleteNode(nodeId: string, userId: string): Promise<void>;
+  updateNodeStatus(nodeId: string, userId: string, status: 'active' | 'paused' | 'alert'): Promise<void>;
   getNodeByTrackingId(trackingId: string): Promise<any | null>;
-  incrementNodeClickCount(nodeId: number): Promise<void>;
+  incrementNodeClickCount(nodeId: string): Promise<void>;
 
   // Asset operations
-  getAssetsByNodeId(nodeId: number, userId: number): Promise<any[]>;
-  createAsset(data: InsertNodeAsset): Promise<number>;
-  deleteAsset(assetId: number, userId: number): Promise<string>;
+  getAssetsByNodeId(nodeId: string, userId: string): Promise<any[]>;
+  createAsset(data: InsertNodeAsset): Promise<string>;
+  deleteAsset(assetId: string, userId: string): Promise<string>;
 
   // User Integration operations
-  getUserIntegrations(userId: number): Promise<FrontendIntegration[]>;
-  getUserIntegration(userId: number, integrationId: string): Promise<FrontendIntegration | null>;
-  upsertUserIntegration(userId: number, integrationId: string, data: {
+  getUserIntegrations(userId: string): Promise<FrontendIntegration[]>;
+  getUserIntegration(userId: string, integrationId: string): Promise<FrontendIntegration | null>;
+  upsertUserIntegration(userId: string, integrationId: string, data: {
     status: 'connected' | 'disconnected' | 'pending' | 'error';
     apiKey?: string | null;
-    metadataJson?: string | null;
+    metadata?: any;
     lastSyncAt?: Date | null;
-    metricsJson?: string | null;
+    metrics?: any;
     errorMessage?: string | null;
   }): Promise<void>;
-  disconnectUserIntegration(userId: number, integrationId: string): Promise<void>;
+  disconnectUserIntegration(userId: string, integrationId: string): Promise<void>;
 
   // Action Feed operations
-  createAction(userId: number, data: {
-    type: string;
-    title: string;
-    message: string;
-    metadataJson?: any;
-  }): Promise<number>;
-  getActions(userId: number, limit?: number): Promise<any[]>;
+  createAction(userId: string, data: any): Promise<string>;
+  getActions(userId: string, limit?: number): Promise<any[]>;
 
   // System Metrics operations
-  updateSystemMetric(userId: number, data: {
-    name: string;
-    value: string;
-    unit?: string;
-    category?: string;
-  }): Promise<void>;
-  getSystemMetrics(userId: number): Promise<any[]>;
+  updateSystemMetric(userId: string, data: any): Promise<void>;
+  getSystemMetrics(userId: string): Promise<any[]>;
 }

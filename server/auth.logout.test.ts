@@ -14,11 +14,11 @@ function createAuthContext(): { ctx: TrpcContext; clearedCookies: CookieCall[] }
   const clearedCookies: CookieCall[] = [];
 
   const user: AuthenticatedUser = {
-    id: 1,
+    id: "sample-uuid",
     openId: "sample-user",
     email: "sample@example.com",
     name: "Sample User",
-    loginMethod: "manus",
+    loginMethod: "supabase",
     role: "user",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -36,6 +36,12 @@ function createAuthContext(): { ctx: TrpcContext; clearedCookies: CookieCall[] }
         clearedCookies.push({ name, options });
       },
     } as TrpcContext["res"],
+    supabase: {
+      auth: {
+        signOut: async () => ({ error: null }),
+      }
+    } as any,
+    session: {} as any,
   };
 
   return { ctx, clearedCookies };

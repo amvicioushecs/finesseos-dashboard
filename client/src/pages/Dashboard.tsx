@@ -458,7 +458,7 @@ const DashboardOverview = ({ links }: { links: AffiliateLink[] }) => {
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
-        table: 'actionFeed',
+        table: 'action_feed',
         filter: `userId=eq.${user.id}`
       }, (payload) => {
         setLiveActions(prev => [payload.new, ...prev].slice(0, 15));
@@ -474,7 +474,7 @@ const DashboardOverview = ({ links }: { links: AffiliateLink[] }) => {
       .on('postgres_changes', { 
         event: '*', 
         schema: 'public', 
-        table: 'systemMetrics',
+        table: 'system_metrics',
         filter: `userId=eq.${user.id}`
       }, (payload) => {
         const newData = payload.new as any;
@@ -854,8 +854,8 @@ const LinkExplorer = ({
   ] as const;
 
   // Assets query from DB
-  const nodeId = typeof link.id === 'number' ? link.id : parseInt(link.id as string);
-  const isDbNode = !isNaN(nodeId);
+  const isDbNode = !link.id.startsWith('L');
+  const nodeId = link.id;
   const assetsQuery = trpc.nodes.listAssets.useQuery(
     { nodeId },
     { enabled: isDbNode, refetchOnWindowFocus: false }
@@ -922,9 +922,9 @@ const LinkExplorer = ({
   };
 
   const handleDeleteAsset = (assetId: string) => {
-    const id = parseInt(assetId);
-    if (!isNaN(id)) {
-      deleteAssetMutation.mutate({ assetId: id });
+    const isDbAsset = !assetId.startsWith('A');
+    if (isDbAsset) {
+      deleteAssetMutation.mutate({ assetId });
     } else {
       onUpdate({ ...link, assets: link.assets.filter(a => a.id !== assetId) });
     }
@@ -2107,9 +2107,9 @@ export default function Dashboard() {
   });
 
   const handleDeleteLink = useCallback((link: AffiliateLink) => {
-    const nodeId = typeof link.id === 'number' ? link.id : parseInt(link.id as string);
-    if (!isNaN(nodeId)) {
-      deleteNodeMutation.mutate({ nodeId });
+    const isDbNode = !link.id.startsWith('L');
+    if (isDbNode) {
+      deleteNodeMutation.mutate({ nodeId: link.id });
     }
   }, [deleteNodeMutation]);
 

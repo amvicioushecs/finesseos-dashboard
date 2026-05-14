@@ -66,7 +66,7 @@ describe('db helpers (mocked)', () => {
       status: 'connected',
       apiKey: 'test-key',
       lastSyncAt: new Date(),
-      metricsJson: null,
+      metrics: null,
       errorMessage: null,
     });
     expect(db.upsertUserIntegration).toHaveBeenCalledWith(

@@ -1,119 +1,142 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { pgTable, uuid, text, timestamp, varchar, integer, jsonb, unique } from 'drizzle-orm/pg-core';
 
 /**
  * Core user table backing auth flow.
  */
-export const users = mysqlTable("users", {
-  id: int("id").autoincrement().primaryKey(),
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  openId: varchar("open_id", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  loginMethod: varchar("login_method", { length: 64 }),
+  role: text("role").default("user").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  lastSignedIn: timestamp("last_signed_in").defaultNow().notNull(),
 });
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
 // ─── Affiliate Nodes ────────────────────────────────────────────────────────
-// Each node represents one affiliate program link with all its intelligence data
-// JSON arrays stored as text columns (TiDB compatible)
 
-export const affiliateNodes = mysqlTable("affiliateNodes", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  // Core identity
-  brandName: varchar("brandName", { length: 255 }).notNull(),
-  slug: varchar("slug", { length: 255 }).notNull(),
-  destination: text("destination").notNull(),
-  platform: varchar("platform", { length: 64 }).notNull(),
-  category: varchar("category", { length: 128 }).notNull(),
-  status: mysqlEnum("status", ["active", "paused", "alert"]).default("active").notNull(),
-  // Performance
-  clicks: varchar("clicks", { length: 32 }).default("0").notNull(),
-  clickCount: int("clickCount").default(0).notNull(),
-  trackingId: varchar("trackingId", { length: 16 }).unique(),
-  earnings: varchar("earnings", { length: 32 }).default("$0").notNull(),
-  commission: varchar("commission", { length: 128 }).default("TBD").notNull(),
-  // Compliance (JSON arrays stored as text)
-  complianceDisclosure: text("complianceDisclosure"),
-  complianceRulesJson: text("complianceRulesJson"), // JSON array of strings
-  complianceStatus: mysqlEnum("complianceStatus", ["passed", "warning", "failed"]).default("passed").notNull(),
-  complianceFtcNotes: text("complianceFtcNotes"),
-  // Intelligence (JSON stored as text)
-  keywordResearchJson: text("keywordResearchJson"), // JSON array of strings
-  marketingAngle: text("marketingAngle"),
-  personasJson: text("personasJson"), // JSON array of persona objects
-  contentSuggestionsJson: text("contentSuggestionsJson"), // JSON array of strings
-  targetPlatformsJson: text("targetPlatformsJson"), // JSON array of strings
-  strategyNotes: text("strategyNotes"),
-  // Brand assets from Brandfetch
-  brandLogoUrl: text("brandLogoUrl"),
-  brandIconUrl: text("brandIconUrl"),
-  brandPrimaryColor: varchar("brandPrimaryColor", { length: 16 }),
-  brandColorsJson: text("brandColorsJson"), // JSON array of hex color strings
-  brandDescription: text("brandDescription"),
-  brandIndustry: varchar("brandIndustry", { length: 128 }),
-  brandDomain: varchar("brandDomain", { length: 255 }),
-  // Timestamps
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+export const affiliateNodes = pgTable('affiliate_nodes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  
+  brandName: varchar('brand_name', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 255 }).notNull(),
+  destination: text('destination').notNull(),
+  platform: varchar('platform', { length: 64 }).notNull(),
+  category: varchar('category', { length: 128 }).notNull(),
+  status: text('status').default('active').notNull(),
+  
+  clicks: varchar('clicks', { length: 32 }).default('0').notNull(),
+  clickCount: integer('click_count').default(0).notNull(),
+  trackingId: varchar('tracking_id', { length: 16 }).unique(),
+  earnings: varchar('earnings', { length: 32 }).default('$0').notNull(),
+  commission: varchar('commission', { length: 128 }).default('TBD').notNull(),
+  
+  complianceDisclosure: text('compliance_disclosure'),
+  complianceRules: jsonb('compliance_rules').default([]),
+  complianceStatus: text('compliance_status').default('passed').notNull(),
+  complianceFtcNotes: text('compliance_ftc_notes'),
+  
+  keywordResearch: jsonb('keyword_research').default([]),
+  marketingAngle: text('marketing_angle'),
+  personas: jsonb('personas').default([]),
+  contentSuggestions: jsonb('content_suggestions').default([]),
+  targetPlatforms: jsonb('target_platforms').default([]),
+  strategyNotes: text('strategy_notes'),
+  
+  brandLogoUrl: text('brand_logo_url'),
+  brandIconUrl: text('brand_icon_url'),
+  brandPrimaryColor: varchar('brand_primary_color', { length: 16 }),
+  brandColors: jsonb('brand_colors').default([]),
+  brandDescription: text('brand_description'),
+  brandIndustry: varchar('brand_industry', { length: 128 }),
+  brandDomain: varchar('brand_domain', { length: 255 }),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 export type AffiliateNode = typeof affiliateNodes.$inferSelect;
 export type InsertAffiliateNode = typeof affiliateNodes.$inferInsert;
 
 // ─── Node Assets ─────────────────────────────────────────────────────────────
-// Files uploaded to S3 and associated with a specific affiliate node
 
-export const nodeAssets = mysqlTable("nodeAssets", {
-  id: int("id").autoincrement().primaryKey(),
-  nodeId: int("nodeId").notNull(),
-  userId: int("userId").notNull(),
-  // File metadata
-  filename: varchar("filename", { length: 512 }).notNull(),
-  originalName: varchar("originalName", { length: 512 }).notNull(),
-  mimeType: varchar("mimeType", { length: 128 }).notNull(),
-  fileSize: int("fileSize").notNull(),
-  // S3 reference
-  s3Key: varchar("s3Key", { length: 1024 }).notNull(),
-  url: text("url").notNull(),
-  // Asset type
-  assetType: mysqlEnum("assetType", ["image", "banner", "copy", "video", "document", "other"]).default("other").notNull(),
-  label: varchar("label", { length: 255 }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+export const nodeAssets = pgTable('node_assets', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  nodeId: uuid('node_id').notNull().references(() => affiliateNodes.id),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  
+  filename: varchar('filename', { length: 512 }).notNull(),
+  originalName: varchar('original_name', { length: 512 }).notNull(),
+  mimeType: varchar('mime_type', { length: 128 }).notNull(),
+  fileSize: integer('file_size').notNull(),
+  
+  s3Key: varchar('s3_key', { length: 1024 }).notNull(),
+  url: text('url').notNull(),
+  
+  assetType: text('asset_type').default('other').notNull(),
+  label: varchar('label', { length: 255 }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 export type NodeAsset = typeof nodeAssets.$inferSelect;
 export type InsertNodeAsset = typeof nodeAssets.$inferInsert;
 
 // ─── User Integrations ────────────────────────────────────────────────────────
-// Stores per-user connection state for each external platform integration.
-// API keys are stored encrypted. OAuth tokens stored in metadataJson.
 
-export const userIntegrations = mysqlTable("userIntegrations", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  // Which integration (matches integrationId in the static catalog, e.g. 'shopify', 'ga4')
-  integrationId: varchar("integrationId", { length: 64 }).notNull(),
-  // Connection state
-  status: mysqlEnum("status", ["connected", "disconnected", "pending", "error"]).default("disconnected").notNull(),
-  // Credentials — API key stored as plain text (encrypt at application layer if needed)
-  apiKey: text("apiKey"),
-  // OAuth tokens and any extra metadata (JSON)
-  metadataJson: text("metadataJson"),
-  // Last successful sync timestamp
-  lastSyncAt: timestamp("lastSyncAt"),
-  // Live metrics pulled from the platform (JSON: { label: string, value: string }[])
-  metricsJson: text("metricsJson"),
-  // Error message if status === 'error'
-  errorMessage: text("errorMessage"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+export const userIntegrations = pgTable('user_integrations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  
+  integrationId: varchar('integration_id', { length: 64 }).notNull(),
+  status: text('status').default('disconnected').notNull(),
+  apiKey: text('api_key'),
+  metadata: jsonb('metadata').default({}),
+  lastSyncAt: timestamp('last_sync_at'),
+  metrics: jsonb('metrics').default([]),
+  errorMessage: text('error_message'),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 export type UserIntegration = typeof userIntegrations.$inferSelect;
 export type InsertUserIntegration = typeof userIntegrations.$inferInsert;
+
+// ─── Action Feed ─────────────────────────────────────────────────────────────
+
+export const actionFeed = pgTable('action_feed', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  type: varchar('type', { length: 64 }).notNull(),
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  metadata: jsonb('metadata').default({}),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export type ActionFeed = typeof actionFeed.$inferSelect;
+export type InsertActionFeed = typeof actionFeed.$inferInsert;
+
+// ─── System Metrics ─────────────────────────────────────────────────────────
+
+export const systemMetrics = pgTable('system_metrics', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  name: varchar('name', { length: 64 }).notNull(),
+  value: text('value').notNull(),
+  unit: varchar('unit', { length: 16 }),
+  category: varchar('category', { length: 32 }).default('general'),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (t) => ({
+  unq: unique().on(t.userId, t.name),
+}));
+
+export type SystemMetric = typeof systemMetrics.$inferSelect;
+export type InsertSystemMetric = typeof systemMetrics.$inferInsert;
+

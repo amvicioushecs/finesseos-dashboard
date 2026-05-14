@@ -1,45 +1,28 @@
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { createServerSupabaseClient } from "../../lib/supabase";
 import { PROVIDER_CONFIG } from "./config";
 import type { IAuthProvider } from "./types";
 import type { Request } from "express";
 import type { User } from "../../../drizzle/schema";
 import { ForbiddenError } from "@shared/_core/errors";
 import { dataProvider } from "./index";
-import { COOKIE_NAME } from "@shared/const";
-import { parse as parseCookieHeader } from "cookie";
 
 export class SupabaseAuthProvider implements IAuthProvider {
-  private client: SupabaseClient;
-
-  constructor() {
-    this.client = createClient(
-      PROVIDER_CONFIG.supabase.url,
-      PROVIDER_CONFIG.supabase.serviceRoleKey || PROVIDER_CONFIG.supabase.anonKey
-    );
-  }
-
   async authenticate(req: Request): Promise<User> {
-    const cookieHeader = req.headers.cookie;
-    if (!cookieHeader) throw ForbiddenError("Missing cookie header");
-
-    const parsed = parseCookieHeader(cookieHeader);
-    const sessionToken = parsed[COOKIE_NAME];
-    if (!sessionToken) throw ForbiddenError("Missing session cookie");
+    const supabase = createServerSupabaseClient(req);
 
     // Try to verify with Supabase
-    const { data: { user: sbUser }, error } = await this.client.auth.getUser(sessionToken);
+    const { data: { user: sbUser }, error } = await supabase.auth.getUser();
 
     if (error || !sbUser) {
-      // If Supabase fails, this provider cannot authenticate
       throw ForbiddenError("Invalid Supabase session");
     }
 
     // Map Supabase user to our local user
-    // We search by email or a new provider-neutral ID mapping
-    let user = await dataProvider.getUserByOpenId(sbUser.id); // Assuming we store SB ID in openId or externalId
+    let user = await dataProvider.getUserByOpenId(sbUser.id);
 
     if (!user && sbUser.email) {
-      user = await dataProvider.getUserByOpenId(sbUser.email); // Fallback to email search
+      // Check if we have a user with this email but different openId (legacy migration)
+      user = await dataProvider.getUserByOpenId(sbUser.email);
     }
 
     if (!user) {
@@ -52,6 +35,14 @@ export class SupabaseAuthProvider implements IAuthProvider {
         lastSignedIn: new Date(),
       });
       user = await dataProvider.getUserByOpenId(sbUser.id);
+    } else if (user.openId !== sbUser.id) {
+      // Update legacy user to use Supabase ID as openId
+      await dataProvider.upsertUser({
+        openId: sbUser.id,
+        email: sbUser.email || user.email,
+        lastSignedIn: new Date(),
+      });
+      user = await dataProvider.getUserByOpenId(sbUser.id);
     }
 
     if (!user) throw ForbiddenError("User not found after Supabase sync");
@@ -60,12 +51,12 @@ export class SupabaseAuthProvider implements IAuthProvider {
   }
 
   async createSession(userId: string, name?: string): Promise<string> {
-    // Usually Supabase handles session creation on the frontend
-    throw new Error("createSession not implemented for SupabaseAuthProvider (handled by Supabase UI/SDK)");
+    throw new Error("createSession not implemented for SupabaseAuthProvider (handled by Supabase SDK)");
   }
 
   async verifySession(token: string): Promise<{ userId: string; name: string } | null> {
-    const { data: { user }, error } = await this.client.auth.getUser(token);
+    // This is less common in Supabase flow where cookies are used, but implemented for compatibility
+    const { data: { user }, error } = await createServerSupabaseClient().auth.getUser(token);
     if (error || !user) return null;
     return {
       userId: user.id,
@@ -73,8 +64,7 @@ export class SupabaseAuthProvider implements IAuthProvider {
     };
   }
 
-  async handleCallback(code: string, state: string): Promise<{ openId: string; name: string; email?: string; platform?: string }> {
-    // Supabase handles OAuth callbacks directly or via its own flow
+  async handleCallback(code: string, state: string): Promise<{ openId: string; name: string; email?: string | null; platform?: string }> {
     throw new Error("handleCallback not implemented for SupabaseAuthProvider");
   }
 }

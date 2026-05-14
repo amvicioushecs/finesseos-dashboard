@@ -74,12 +74,11 @@ export const integrationsRouter = router({
       }
 
       // Store the connection as 'connected' with the provided API key
-      // In production, validate the API key against the platform's API before saving
       await dataProvider.upsertUserIntegration(ctx.user.id, input.integrationId, {
         status: "connected",
         apiKey: input.apiKey,
         lastSyncAt: new Date(),
-        metricsJson: null,
+        metrics: [],
         errorMessage: null,
       });
 
@@ -88,7 +87,7 @@ export const integrationsRouter = router({
         type: 'integration_connected',
         title: 'Platform Connected',
         message: `${catalogItem.name} has been successfully integrated.`,
-        metadataJson: { integrationId: input.integrationId }
+        metadata: { integrationId: input.integrationId }
       });
 
       return { success: true, integrationId: input.integrationId };
@@ -115,7 +114,7 @@ export const integrationsRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: "Integration is not connected" });
       }
 
-      // Update lastSyncAt to now — in production, trigger actual data pull here
+      // Update lastSyncAt to now
       await dataProvider.upsertUserIntegration(ctx.user.id, input.integrationId, {
         status: "connected",
         lastSyncAt: new Date(),

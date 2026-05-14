@@ -4,62 +4,42 @@ import type { TrpcContext } from '../_core/context';
 
 // vi.mock is hoisted to the top of the file by Vitest.
 // All values used inside the factory MUST be defined inline — no external variables.
+vi.mock('../_core/providers', () => ({
+  authProvider: {
+    authenticate: vi.fn(),
+  },
+  dataProvider: {
+    getNodesByUserId: vi.fn().mockResolvedValue([]),
+    getNodeById: vi.fn().mockResolvedValue({
+      id: 'node-1',
+      userId: 'user-1',
+      brandName: 'Test Brand',
+      slug: 'test-program',
+      destination: 'https://example.com/affiliate',
+      platform: 'General',
+      category: 'General',
+      status: 'active',
+      clicks: '0',
+      clickCount: 0,
+      earnings: '$0',
+      commission: '10%',
+      createdAt: '2024-01-01',
+      compliance: { status: 'passed', rules: [], disclosure: '', ftcNotes: '' },
+      intelligence: { keywordResearch: [], personas: [], marketingAngle: '', contentSuggestions: [], targetPlatforms: [], strategyNotes: '' },
+      assets: [],
+    }),
+    createNode: vi.fn().mockResolvedValue('node-1'),
+    updateNodeStatus: vi.fn().mockResolvedValue(undefined),
+    deleteNode: vi.fn().mockResolvedValue(undefined),
+    createAsset: vi.fn().mockResolvedValue('asset-1'),
+    getAssetsByNodeId: vi.fn().mockResolvedValue([]),
+    deleteAsset: vi.fn().mockResolvedValue('test/test.png'),
+    createAction: vi.fn().mockResolvedValue('action-1'),
+  }
+}));
+
 vi.mock('../db', () => ({
   getDb: vi.fn().mockResolvedValue(null),
-  upsertUser: vi.fn(),
-  getUserByOpenId: vi.fn(),
-  getNodesByUserId: vi.fn().mockResolvedValue([]),
-  getNodeById: vi.fn().mockResolvedValue({
-    id: 1,
-    userId: 1,
-    slug: 'test-program',
-    destination: 'https://example.com/affiliate',
-    brandName: 'Test Brand',
-    platform: 'General',
-    category: 'General',
-    status: 'active',
-    marketingAngle: 'Test angle',
-    commissionRate: '10%',
-    complianceStatus: 'compliant',
-    complianceRules: [],
-    keywords: [],
-    personas: [],
-    contentIdeas: [],
-    targetPlatforms: [],
-    ftcDisclosure: 'This post contains affiliate links.',
-    notes: 'Test notes',
-    assets: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }),
-  createNode: vi.fn().mockResolvedValue({
-    id: 1,
-    userId: 1,
-    slug: 'test-program',
-    destination: 'https://example.com/affiliate',
-    brandName: 'Test Brand',
-    platform: 'General',
-    category: 'General',
-    status: 'active',
-    marketingAngle: 'Test angle',
-    commissionRate: '10%',
-    complianceStatus: 'compliant',
-    complianceRules: [],
-    keywords: [],
-    personas: [],
-    contentIdeas: [],
-    targetPlatforms: [],
-    ftcDisclosure: 'This post contains affiliate links.',
-    notes: 'Test notes',
-    assets: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }),
-  updateNodeStatus: vi.fn().mockResolvedValue(undefined),
-  deleteNode: vi.fn().mockResolvedValue(undefined),
-  createAsset: vi.fn().mockResolvedValue(1),
-  getAssetsByNodeId: vi.fn().mockResolvedValue([]),
-  deleteAsset: vi.fn().mockResolvedValue('test/test.png'),
   nodeRowToFrontend: vi.fn(),
 }));
 
@@ -76,30 +56,30 @@ vi.mock('../_core/llm', () => ({
           brandName: 'Test Brand',
           platform: 'General',
           category: 'General',
-          commissionRate: '10%',
+          commission: '10%',
           marketingAngle: 'Test angle',
-          keywords: ['kw1', 'kw2'],
-          personas: [{ name: 'Persona 1', age: '25-35', painPoints: ['pain1'], platforms: ['Instagram'], hook: 'hook1' }],
-          contentIdeas: ['idea1', 'idea2'],
-          targetPlatforms: [{ platform: 'Instagram', fitScore: 90, reason: 'Great fit' }],
-          ftcDisclosure: 'This post contains affiliate links.',
+          keywordResearch: ['kw1', 'kw2'],
+          personas: [{ name: 'Persona 1', pain: 'pain1', hook: 'hook1', platform: 'Instagram' }],
+          contentSuggestions: ['idea1', 'idea2'],
+          targetPlatforms: ['Instagram'],
+          disclosure: 'This post contains affiliate links.',
           complianceRules: ['Rule 1'],
-          complianceStatus: 'compliant',
-          notes: 'Test notes',
+          complianceStatus: 'passed',
+          strategyNotes: 'Test notes',
         })
       }
     }]
   }),
 }));
 
-function createAuthContext(userId = 1): TrpcContext {
+function createAuthContext(userId = 'user-1'): TrpcContext {
   return {
     user: {
       id: userId,
       openId: 'test-user',
       email: 'test@example.com',
       name: 'Test User',
-      loginMethod: 'manus',
+      loginMethod: 'supabase',
       role: 'user',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -107,6 +87,12 @@ function createAuthContext(userId = 1): TrpcContext {
     },
     req: { protocol: 'https', headers: {} } as TrpcContext['req'],
     res: { clearCookie: vi.fn() } as unknown as TrpcContext['res'],
+    supabase: {
+      auth: {
+        signOut: async () => ({ error: null }),
+      }
+    } as any,
+    session: {} as any,
   };
 }
 
@@ -126,22 +112,37 @@ describe('nodes router', () => {
   it('nodes.create saves a node and returns it', async () => {
     const ctx = createAuthContext();
     const caller = appRouter.createCaller(ctx);
+    // @ts-ignore - Mocked data structure
     const result = await caller.nodes.create({
       brandName: 'Test Brand',
       slug: 'test-program',
       destination: 'https://example.com/affiliate',
       platform: 'General',
       category: 'General',
+      status: 'active',
+      clicks: '0',
+      earnings: '$0',
+      commission: '10%',
+      complianceDisclosure: 'disclosure',
+      complianceRules: [],
+      complianceStatus: 'passed',
+      complianceFtcNotes: 'notes',
+      keywordResearch: [],
+      marketingAngle: 'angle',
+      personas: [],
+      contentSuggestions: [],
+      targetPlatforms: [],
+      strategyNotes: 'notes',
     });
     expect(result).toBeDefined();
-    expect(result.id).toBe(1);
+    expect(result.id).toBe('node-1');
     expect(result.slug).toBe('test-program');
   });
 
   it('nodes.listAssets returns empty array for node with no assets', async () => {
     const ctx = createAuthContext();
     const caller = appRouter.createCaller(ctx);
-    const result = await caller.nodes.listAssets({ nodeId: 1 });
+    const result = await caller.nodes.listAssets({ nodeId: 'node-1' });
     expect(Array.isArray(result)).toBe(true);
     expect(result).toHaveLength(0);
   });
@@ -150,7 +151,7 @@ describe('nodes router', () => {
     const ctx = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     const result = await caller.nodes.uploadAsset({
-      nodeId: 1,
+      nodeId: 'node-1',
       filename: 'banner.png',
       mimeType: 'image/png',
       fileSize: 2048,
@@ -167,6 +168,6 @@ describe('nodes router', () => {
   it('nodes.deleteAsset resolves with success', async () => {
     const ctx = createAuthContext();
     const caller = appRouter.createCaller(ctx);
-    await expect(caller.nodes.deleteAsset({ assetId: 1 })).resolves.toEqual({ success: true });
+    await expect(caller.nodes.deleteAsset({ assetId: 'asset-1' })).resolves.toEqual({ success: true });
   });
 });

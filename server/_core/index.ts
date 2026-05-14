@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import cookieParser from "cookie-parser";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -34,6 +35,10 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function createApp() {
   const app = express();
   const server = createServer(app);
+  
+  // Important for Supabase session cookies
+  app.use(cookieParser());
+  
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -56,7 +61,7 @@ async function createApp() {
           type: 'click_detected',
           title: 'Link Clicked',
           message: `Inbound click detected for ${node.brandName} via ${node.platform}`,
-          metadataJson: { nodeId: node.id, trackingId: node.trackingId }
+          metadata: { nodeId: node.id, trackingId: node.trackingId }
         });
       })().catch(err => console.error('[ClickTrack] Failed to track:', err));
 

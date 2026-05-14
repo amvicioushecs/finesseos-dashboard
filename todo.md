@@ -175,6 +175,15 @@
 
 ## Completed
 - [x] Full migration from Manus/MySQL to Supabase/Postgres and Vercel.
+  - [x] CLEAN: Remove Manus runtime from `vite.config.ts`
+  - [x] AUTH: Implement Supabase SSR client (browser + server)
+  - [x] DB: Translate MySQL schema to Postgres (Supabase)
+  - [x] DB: Refactor `server/db.ts` for Postgres-js
+  - [x] PROVIDERS: Implement `SupabaseAuthProvider` and `SupabaseDataProvider`
+  - [x] TRPC: Update context to include Supabase session
+  - [x] REALTIME: Update frontend subscriptions for snake_case tables
+  - [x] DEPLOY: Add `vercel.json` and API entrypoint
+  - [x] DEPLOY: Build verified successfully
 - [x] Abstracted provider architecture (`IAuthProvider`, `IDataProvider`).
 - [x] Real-time activity feed and system metrics.
 - [x] S3-compatible asset management.

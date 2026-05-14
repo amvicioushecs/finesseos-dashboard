@@ -18,7 +18,7 @@ export const nodesRouter = router({
 
   // Get a single node by ID
   get: protectedProcedure
-    .input(z.object({ nodeId: z.number() }))
+    .input(z.object({ nodeId: z.string() }))
     .query(async ({ ctx, input }) => {
       const node = await dataProvider.getNodeById(input.nodeId, ctx.user.id);
       if (!node) throw new TRPCError({ code: "NOT_FOUND", message: "Node not found" });
@@ -77,7 +77,7 @@ export const nodesRouter = router({
           type: 'node_created',
           title: 'Node Created',
           message: `${node.brandName} affiliate node is now live in your vault.`,
-          metadataJson: { nodeId: node.id, platform: node.platform }
+          metadata: { nodeId: node.id, platform: node.platform }
         });
       }
 
@@ -86,7 +86,7 @@ export const nodesRouter = router({
 
   // Get the tracked link URL for a node (for sharing/promotion)
   getTrackedUrl: protectedProcedure
-    .input(z.object({ nodeId: z.number() }))
+    .input(z.object({ nodeId: z.string() }))
     .query(async ({ ctx, input }) => {
       const node = await dataProvider.getNodeById(input.nodeId, ctx.user.id);
       if (!node) throw new TRPCError({ code: "NOT_FOUND", message: "Node not found" });
@@ -96,7 +96,7 @@ export const nodesRouter = router({
 
   // Delete a node (also deletes all its assets)
   delete: protectedProcedure
-    .input(z.object({ nodeId: z.number() }))
+    .input(z.object({ nodeId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await dataProvider.deleteNode(input.nodeId, ctx.user.id);
       return { success: true };
@@ -106,7 +106,7 @@ export const nodesRouter = router({
   updateStatus: protectedProcedure
     .input(
       z.object({
-        nodeId: z.number(),
+        nodeId: z.string(),
         status: z.enum(["active", "paused", "alert"]),
       })
     )
@@ -121,7 +121,7 @@ export const nodesRouter = router({
   getUploadUrl: protectedProcedure
     .input(
       z.object({
-        nodeId: z.number(),
+        nodeId: z.string(),
         filename: z.string().min(1),
         mimeType: z.string().min(1),
         fileSize: z.number().positive(),
@@ -152,7 +152,7 @@ export const nodesRouter = router({
   confirmAsset: protectedProcedure
     .input(
       z.object({
-        nodeId: z.number(),
+        nodeId: z.string(),
         s3Key: z.string().min(1),
         url: z.string().url(),
         filename: z.string().min(1),
@@ -189,7 +189,7 @@ export const nodesRouter = router({
   uploadAsset: protectedProcedure
     .input(
       z.object({
-        nodeId: z.number(),
+        nodeId: z.string(),
         filename: z.string().min(1),
         mimeType: z.string().min(1),
         fileSize: z.number().positive(),
@@ -233,13 +233,13 @@ export const nodesRouter = router({
 
   // List assets for a node
   listAssets: protectedProcedure
-    .input(z.object({ nodeId: z.number() }))
+    .input(z.object({ nodeId: z.string() }))
     .query(async ({ ctx, input }) => {
       const node = await dataProvider.getNodeById(input.nodeId, ctx.user.id);
       if (!node) throw new TRPCError({ code: "NOT_FOUND", message: "Node not found" });
       const assets = await dataProvider.getAssetsByNodeId(input.nodeId, ctx.user.id);
       return assets.map(a => ({
-        id: String(a.id),
+        id: a.id,
         name: a.originalName,
         type: a.assetType,
         size: formatFileSize(a.fileSize),
@@ -251,7 +251,7 @@ export const nodesRouter = router({
 
   // Delete an asset
   deleteAsset: protectedProcedure
-    .input(z.object({ assetId: z.number() }))
+    .input(z.object({ assetId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await dataProvider.deleteAsset(input.assetId, ctx.user.id);
       return { success: true };

@@ -1,8 +1,11 @@
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from '@supabase/ssr';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = (supabaseUrl && supabaseAnonKey) 
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
+export const createClient = () => {
+  return createBrowserClient(supabaseUrl!, supabaseAnonKey!);
+};
+
+// Singleton for easy use in client components
+export const supabase = createClient();
