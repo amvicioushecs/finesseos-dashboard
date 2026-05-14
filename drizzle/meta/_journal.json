@@ -1,19 +1,12 @@
 {
   "version": "7",
-  "dialect": "mysql",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1771819523362,
-      "tag": "0000_sparkling_ultimo",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1771820694985,
-      "tag": "0001_premium_jane_foster",
+      "version": "7",
+      "when": 1778720527677,
+      "tag": "0000_init_postgres",
       "breakpoints": true
     }
   ]
