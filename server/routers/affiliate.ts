@@ -5,7 +5,7 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { invokeLLM } from "../_core/llm";
-import { fetchBrandData, extractDomain } from "../brandfetch";
+import { extractDomain } from "../_core/utils";
 
 // ─── Response Schema ────────────────────────────────────────────────────────
 
@@ -51,11 +51,6 @@ export const affiliateRouter = router({
       // Extract domain for context
       const domain = extractDomain(url);
 
-      // Run Brandfetch lookup and AI generation in parallel for speed
-      const [brandData, llmResponse] = await Promise.allSettled([
-        fetchBrandData(domain),
-        (async () => {
-
       const systemPrompt = `You are FinesseOS Intelligence Engine — an elite AI research system for affiliate marketers.
 Your job is to analyze an affiliate program URL and generate a comprehensive intelligence package that tells the marketer exactly how to make money with that offer.
 Be specific, tactical, and actionable. Think like a 7-figure affiliate marketer who knows every angle.
@@ -84,7 +79,7 @@ Generate the intelligence package with:
 
 Be specific to the actual program. If it's Shopify, talk about e-commerce. If it's ClickFunnels, talk about funnels. If it's Amazon, talk about product reviews.`;
 
-      return await invokeLLM({
+      const llmResult = await invokeLLM({
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
@@ -151,15 +146,8 @@ Be specific to the actual program. If it's Shopify, talk about e-commerce. If it
         },
       });
 
-        })(),
-      ]);
-
-      const brand = brandData.status === "fulfilled" ? brandData.value : null;
-      const llmResult = llmResponse.status === "fulfilled" ? llmResponse.value : null;
-
       if (!llmResult) {
-        const err = llmResponse.status === "rejected" ? llmResponse.reason : new Error("AI generation failed");
-        throw err;
+        throw new Error("AI generation failed");
       }
 
       const content = llmResult.choices?.[0]?.message?.content;
@@ -177,18 +165,15 @@ Be specific to the actual program. If it's Shopify, talk about e-commerce. If it
       // Validate with zod
       const validated = IntelligenceSchema.parse(parsed);
 
-      // Merge Brandfetch brand data into the result
+      // Return result without Brandfetch data
       return {
         ...validated,
-        // Override brandName with official name if Brandfetch found it
-        brandName: brand?.name ?? validated.brandName,
-        // Brand assets from Brandfetch
-        brandLogoUrl: brand?.logoUrl ?? null,
-        brandIconUrl: brand?.iconUrl ?? null,
-        brandPrimaryColor: brand?.primaryColor ?? null,
-        brandColors: brand?.colors ?? [],
-        brandDescription: brand?.description ?? null,
-        brandIndustry: brand?.industry ?? validated.category,
+        brandLogoUrl: null,
+        brandIconUrl: null,
+        brandPrimaryColor: null,
+        brandColors: [],
+        brandDescription: null,
+        brandIndustry: validated.category,
         brandDomain: domain,
       };
     }),

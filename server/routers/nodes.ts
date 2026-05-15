@@ -57,7 +57,7 @@ export const nodesRouter = router({
         contentSuggestions: z.array(z.string()).default([]),
         targetPlatforms: z.array(z.string()).default([]),
         strategyNotes: z.string().default(""),
-        // Brand assets from Brandfetch
+        // Brand assets
         brandLogoUrl: z.string().nullable().default(null),
         brandIconUrl: z.string().nullable().default(null),
         brandPrimaryColor: z.string().nullable().default(null),

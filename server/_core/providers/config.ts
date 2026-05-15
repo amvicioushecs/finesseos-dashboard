@@ -40,13 +40,6 @@ export const PROVIDER_CONFIG = {
     model: process.env.LLM_MODEL || "gpt-4o",
   },
   
-  // Third-party integrations
-  integrations: {
-    brandfetch: {
-      apiKey: process.env.BRANDFETCH_API_KEY || "",
-    },
-  },
-  
   // Runtime environment
   runtime: {
     nodeEnv: process.env.NODE_ENV || "development",

@@ -2,13 +2,13 @@ import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, type PluginOption } from "vite";
 
 // =============================================================================
 // Vite Configuration - Clean (No Manus)
 // =============================================================================
 
-const plugins: Plugin[] = [
+const plugins: PluginOption[] = [
   react(),
   tailwindcss(),
   jsxLocPlugin(),

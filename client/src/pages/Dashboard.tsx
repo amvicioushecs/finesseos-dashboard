@@ -183,8 +183,9 @@ const AddLinkModal = ({ onClose, onAdd }: {
     personas: { name: string; pain: string; hook: string; platform: string }[];
     contentSuggestions: string[]; targetPlatforms: string[]; strategyNotes: string;
     disclosure: string; complianceRules: string[]; complianceStatus: 'passed' | 'warning' | 'failed';
-    // Brand assets from Brandfetch
-    brandLogoUrl?: string | null; brandIconUrl?: string | null; brandPrimaryColor?: string | null;
+    // Brand assets
+    brandLogoUrl?: string | null;
+ brandIconUrl?: string | null; brandPrimaryColor?: string | null;
     brandColors?: string[]; brandDescription?: string | null; brandIndustry?: string | null; brandDomain?: string | null;
   }>(null);
 

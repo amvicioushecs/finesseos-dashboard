@@ -57,7 +57,7 @@ export interface AffiliateLink {
   intelligence: Intelligence;
   createdAt: string;
   category?: string;
-  // Brand assets from Brandfetch
+  // Brand assets
   brandLogoUrl?: string | null;
   brandIconUrl?: string | null;
   brandPrimaryColor?: string | null;

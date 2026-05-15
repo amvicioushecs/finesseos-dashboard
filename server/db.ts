@@ -83,7 +83,7 @@ export type FrontendNode = {
   earnings: string;
   commission: string;
   createdAt: string;
-  // Brand assets from Brandfetch
+  // Brand assets
   brandLogoUrl: string | null;
   brandIconUrl: string | null;
   brandPrimaryColor: string | null;
