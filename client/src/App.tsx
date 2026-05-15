@@ -41,7 +41,9 @@ function App() {
               },
             }}
           />
-          <Router />
+          <main>
+            <Router />
+          </main>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
