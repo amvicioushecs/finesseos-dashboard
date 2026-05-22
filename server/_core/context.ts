@@ -16,7 +16,10 @@ export async function createContext(
   try {
     user = await authProvider.authenticate(opts.req);
   } catch (error) {
-    // Authentication is optional for public procedures.
+    // In dev mode, log if authentication failed explicitly to help debugging
+    if (process.env.NODE_ENV === 'development') {
+      console.debug("[Context] Auth bypassed or failed (public access):", error);
+    }
     user = null;
   }
 

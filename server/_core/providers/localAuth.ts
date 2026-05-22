@@ -15,6 +15,7 @@ export class LocalAuthProvider implements IAuthProvider {
   async authenticate(req: Request): Promise<User> {
     const token = req.cookies[COOKIE_NAME];
     if (!token) {
+      console.warn("[Auth] Authentication failed: No session cookie found.");
       // Fallback: If OWNER_OPEN_ID is set and we are in dev, auto-login
       if (PROVIDER_CONFIG.runtime.nodeEnv === "development" && PROVIDER_CONFIG.auth.ownerOpenId) {
         let user = await dataProvider.getUserByOpenId(PROVIDER_CONFIG.auth.ownerOpenId);
@@ -35,11 +36,13 @@ export class LocalAuthProvider implements IAuthProvider {
 
     const payload = await this.verifySession(token);
     if (!payload) {
+      console.warn("[Auth] Authentication failed: Invalid or expired session token.");
       throw UnauthorizedError("Invalid session token");
     }
 
     const user = await dataProvider.getUserByOpenId(payload.userId);
     if (!user) {
+      console.warn(`[Auth] Authentication failed: User ${payload.userId} not found in database.`);
       throw ForbiddenError("User in token no longer exists");
     }
 
