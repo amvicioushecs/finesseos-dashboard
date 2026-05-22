@@ -7,17 +7,10 @@ import "dotenv/config";
  */
 
 export const PROVIDER_CONFIG = {
-  // Supabase configuration
-  supabase: {
-    url: process.env.SUPABASE_URL || "",
-    anonKey: process.env.SUPABASE_ANON_KEY || "",
-    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
-  },
-
   // Storage configuration (S3-compatible)
   storage: {
     bucket: process.env.STORAGE_BUCKET || "",
-    endpoint: process.env.STORAGE_ENDPOINT || "", // e.g. s3.amazonaws.com or supabase.co
+    endpoint: process.env.STORAGE_ENDPOINT || "", 
     accessKeyId: process.env.STORAGE_ACCESS_KEY_ID || "",
     secretAccessKey: process.env.STORAGE_SECRET_ACCESS_KEY || "",
     region: process.env.STORAGE_REGION || "us-east-1",
@@ -25,7 +18,7 @@ export const PROVIDER_CONFIG = {
   
   // Core infrastructure
   auth: {
-    jwtSecret: process.env.JWT_SECRET || "",
+    jwtSecret: process.env.JWT_SECRET || "dev-only-secret-do-not-use-in-prod",
     ownerOpenId: process.env.OWNER_OPEN_ID || "",
   },
   database: {
@@ -53,26 +46,17 @@ export const PROVIDER_CONFIG = {
  */
 export function validateConfig() {
   console.log("[Config] Validating configuration...");
-  console.log("[Config] DATABASE_URL exists:", !!process.env.DATABASE_URL);
-  console.log("[Config] SUPABASE_URL exists:", !!process.env.SUPABASE_URL);
   
   const missing: string[] = [];
   
-  // Database is always required
+  // Database and Auth keys are required
   if (!PROVIDER_CONFIG.database.url) missing.push("DATABASE_URL");
-  
-  // Supabase is now required
-  const hasSupabase = PROVIDER_CONFIG.supabase.url && PROVIDER_CONFIG.supabase.anonKey;
-
-  if (!hasSupabase) {
-    missing.push("SUPABASE_URL and SUPABASE_ANON_KEY");
-  }
+  if (!PROVIDER_CONFIG.auth.jwtSecret) missing.push("JWT_SECRET");
 
   if (missing.length > 0) {
     console.warn(`[Config] Missing environment variables: ${missing.join(", ")}`);
     if (PROVIDER_CONFIG.runtime.isProduction) {
       console.error("[Config] Warning: Critical environment variables missing.");
-      // Do not exit process in serverless environment
     }
   } else {
     console.log("[Config] Configuration valid.");
