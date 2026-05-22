@@ -18,7 +18,10 @@ export class PostgresDataProvider implements IDataProvider {
       try {
         const client = postgres(PROVIDER_CONFIG.database.url, {
           prepare: false,
-          ssl: { rejectUnauthorized: false }, // Common for cloud databases
+          ssl: { rejectUnauthorized: false },
+          max: 10,               // Render free tier limit
+          idle_timeout: 20,      // Seconds
+          connect_timeout: 10,   // Seconds
         });
         this._db = drizzle(client);
       } catch (error) {
@@ -31,7 +34,14 @@ export class PostgresDataProvider implements IDataProvider {
     if (!this._db) {
       throw new Error("Postgres Database not configured");
     }
-    return this._db;
+    try {
+      // Basic health check: simple query to ensure the pooler is alive
+      await this._db.execute`SELECT 1`;
+      return this._db;
+    } catch (e) {
+      console.error("[Database] Health check failed:", e);
+      throw new Error("Database connection unavailable");
+    }
   }
 
   // ─── User operations ────────────────────────────────────────────────────────
