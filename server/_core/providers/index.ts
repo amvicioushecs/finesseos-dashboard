@@ -1,5 +1,5 @@
-import { SupabaseAuthProvider } from "./supabaseAuth";
-import { SupabaseDataProvider } from "./supabaseData";
+import { LocalAuthProvider } from "./localAuth";
+import { PostgresDataProvider } from "./postgresData";
 import type { IAuthProvider, IDataProvider } from "./types";
 
 let _authProvider: IAuthProvider | null = null;
@@ -36,11 +36,11 @@ export const dataProvider = {
 } as IDataProvider;
 
 function getAuthProvider() {
-  if (!_authProvider) _authProvider = new SupabaseAuthProvider();
+  if (!_authProvider) _authProvider = new LocalAuthProvider();
   return _authProvider;
 }
 
 function getDataProvider() {
-  if (!_dataProvider) _dataProvider = new SupabaseDataProvider();
+  if (!_dataProvider) _dataProvider = new PostgresDataProvider();
   return _dataProvider;
 }

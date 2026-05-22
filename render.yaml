@@ -9,17 +9,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        sync: false # External Supabase Postgres URL
-      - key: SUPABASE_URL
-        sync: false
-      - key: VITE_SUPABASE_URL
-        sync: false
-      - key: SUPABASE_ANON_KEY
-        sync: false
-      - key: VITE_SUPABASE_ANON_KEY
-        sync: false
-      - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
+        fromDatabase:
+          name: finesseos-db
+          property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: STORAGE_BUCKET
@@ -40,3 +32,7 @@ services:
         value: gpt-4o
       - key: OWNER_OPEN_ID
         sync: false
+
+databases:
+  - name: finesseos-db
+    plan: free

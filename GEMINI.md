@@ -1,41 +1,36 @@
 
-/Users/amvicious/.cursor/plans/supabase_render_migration.plan.md
-Use a phased migration targeting Render for hosting.
+/Users/amvicious/.cursor/plans/render_native_migration.plan.md
+Use a phased migration targeting Render Native (Postgres) and removing Supabase.
 
 flowchart LR
   inventory[InventoryManusCouplings] --> adapter[AddProviderAbstractions]
-  adapter --> auth[CutoverAuthToSupabase]
-  auth --> db[CutoverDataLayerToSupabase]
-  db --> realtime[ImplementSupabaseRealtime]
+  adapter --> auth[ImplementLocalAuth]
+  auth --> db[PointToRenderPostgres]
+  db --> realtime[ImplementLocalPollingRealtime]
   realtime --> deploy[DeployToRender]
   deploy --> production[ProductionCutover]
-  production --> cleanup[RemoveManusCodeAndEnv]
+  production --> cleanup[RemoveSupabaseAndManusCode]
 
 Scope Confirmed
-Authentication/authorization (Supabase)
-Database schema + data migration (Supabase Postgres)
-Realtime/subscriptions (Supabase Realtime)
-Render deployment + env/secrets (Blueprint)
+Authentication/authorization (Local JWT + Owner ID)
+Database schema + data migration (Render PostgreSQL)
+Realtime/subscriptions (Polling fallback)
+Render deployment + env/secrets (Blueprint with Render DB)
 Key Files To Touch
 
 Auth/session core: server/_core/context.ts, server/_core/trpc.ts
 Data layer: server/db.ts, drizzle/schema.ts
-Frontend auth/bootstrap envs: client/src/const.ts, client/src/_core/hooks/useAuth.ts
-Deploy/runtime: package.json, server/_core/index.ts, vite.config.ts, render.yaml
+Frontend auth/bootstrap: client/src/lib/auth.ts (New), client/src/_core/hooks/useAuth.ts
+Deploy/runtime: package.json, server/_core/index.ts, render.yaml
 
 Implementation Phases
 
 Phase 1: Freeze and abstract Manus dependencies (DONE)
-Phase 2: Supabase auth migration (DONE)
-Phase 3: Database migration to Supabase Postgres (DONE)
-Phase 4: Realtime implementation (TODO)
-Phase 5: Render deployment hardening
-- Generate render.yaml Blueprint.
-- Configure Web Service for Express/tRPC.
-- Configure environment variables in Render Dashboard.
-Phase 6: Production cutover and Manus removal
-- Cut traffic to Render-backed services.
-- Remove Manus env vars and runtime references.
+Phase 2: Remove Supabase Auth and Implement Local Auth
+Phase 3: Switch Database to Render Managed Postgres
+Phase 4: Remove all Supabase SDK dependencies (Frontend & Backend)
+Phase 5: Render deployment hardening (Blueprint with DB)
+Phase 6: Production cutover and cleanup
 
 
 V

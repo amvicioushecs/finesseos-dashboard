@@ -10,7 +10,7 @@ import type { IDataProvider } from "./types";
 import type { FrontendNode, FrontendIntegration } from "../../db";
 import { nodeRowToFrontend } from "../../db";
 
-export class SupabaseDataProvider implements IDataProvider {
+export class PostgresDataProvider implements IDataProvider {
   private _db: any;
 
   constructor() {
@@ -18,7 +18,7 @@ export class SupabaseDataProvider implements IDataProvider {
       try {
         const client = postgres(PROVIDER_CONFIG.database.url, {
           prepare: false,
-          ssl: true,
+          ssl: { rejectUnauthorized: false }, // Common for cloud databases
         });
         this._db = drizzle(client);
       } catch (error) {
@@ -29,7 +29,7 @@ export class SupabaseDataProvider implements IDataProvider {
 
   private async getDb() {
     if (!this._db) {
-      throw new Error("Supabase Database not configured");
+      throw new Error("Postgres Database not configured");
     }
     return this._db;
   }

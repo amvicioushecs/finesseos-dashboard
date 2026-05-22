@@ -4,7 +4,7 @@
 // Layout: Fixed 320px sidebar + main content area
 // ============================================================
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +18,6 @@ import {
 import { useAuth } from '@/_core/hooks/useAuth';
 import { getLoginUrl } from '@/const';
 import { trpc } from '@/lib/trpc';
-import { supabase } from '@/lib/supabase';
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -2074,53 +2073,6 @@ export default function Dashboard() {
     enabled: isAuthenticated,
     refetchOnWindowFocus: false,
   });
-
-  const dbLinks: AffiliateLink[] = (nodesQuery.data ?? []).map(n => ({
-    ...n,
-    assets: (n.assets ?? []).map(a => ({ ...a, type: a.type as import('@/lib/data').AssetType })),
-  }));
-
-  // Use DB nodes when authenticated, otherwise show mock data for demo
-  const links = isAuthenticated ? dbLinks : initialLinks;
-
-  const handleSelectLink = useCallback((link: AffiliateLink) => {
-    setSelectedLink(link);
-    setActiveTab('vault');
-  }, []);
-
-  const handleAddLink = useCallback((link: AffiliateLink) => {
-    // Node is already saved to DB via tRPC mutation in AddLinkModal
-    // Just update local selected state if needed
-    setSelectedLink(link);
-  }, []);
-
-  const handleUpdateLink = useCallback((updated: AffiliateLink) => {
-    setSelectedLink(updated);
-  }, []);
-
-  const utils = trpc.useUtils();
-  const deleteNodeMutation = trpc.nodes.delete.useMutation({
-    onSuccess: () => {
-      utils.nodes.list.invalidate();
-      toast.success('Node deleted', { description: 'Campaign and all assets permanently removed.' });
-    },
-    onError: (err) => toast.error('Delete failed', { description: err.message }),
-  });
-
-  const handleDeleteLink = useCallback((link: AffiliateLink) => {
-    const isDbNode = !link.id.startsWith('L');
-    if (isDbNode) {
-      deleteNodeMutation.mutate({ nodeId: link.id });
-    }
-  }, [deleteNodeMutation]);
-
-  // Sync selectedLink with latest DB data
-  useEffect(() => {
-    if (selectedLink && dbLinks.length > 0) {
-      const fresh = dbLinks.find(l => l.id === selectedLink.id);
-      if (fresh) setSelectedLink(fresh);
-    }
-  }, [nodesQuery.data]);
 
   const navItems = [
     { id: 'dashboard' as ActiveTab, label: 'Overview', icon: LayoutDashboard },
