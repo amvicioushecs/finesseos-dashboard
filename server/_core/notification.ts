@@ -49,7 +49,7 @@ const validatePayload = (input: NotificationPayload): NotificationPayload => {
 
 /**
  * Dispatches a project-owner notification.
- * Since Manus/Forge is removed, this currently just logs to the server console.
+ * Currently just logs to the server console.
  * In a production environment, this could be wired to SendGrid, Slack, or SMS.
  */
 export async function notifyOwner(

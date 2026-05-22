@@ -10,9 +10,6 @@ import { serveStatic, setupVite } from "./vite";
 import { validateConfig } from "./providers/config";
 import { dataProvider } from "./providers";
 
-// Validate environment variables on startup
-validateConfig();
-
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
     const server = net.createServer();
@@ -33,8 +30,11 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function createApp() {
+  // Validate environment variables on startup
+  validateConfig();
+
+  console.log("[Server] Creating application...");
   const app = express();
-  const server = createServer(app);
   
   // Important for Supabase session cookies
   app.use(cookieParser());
@@ -43,6 +43,7 @@ async function createApp() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+  console.log("[Server] Configuring routes...");
   // ── Tracked affiliate link redirect ──────────────────────────────────────────
   // Public endpoint: GET /go/:trackingId
   // Increments click counter and redirects to the affiliate destination URL
@@ -72,6 +73,7 @@ async function createApp() {
     }
   });
 
+  console.log("[Server] Mounting tRPC handler...");
   // tRPC API
   app.use(
     "/api/trpc",
@@ -81,11 +83,13 @@ async function createApp() {
     })
   );
   
-  return { app, server };
+  console.log("[Server] App created successfully.");
+  return { app };
 }
 
 async function startServer() {
-  const { app, server } = await createApp();
+  const { app } = await createApp();
+  const server = createServer(app);
   
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {

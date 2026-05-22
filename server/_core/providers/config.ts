@@ -2,7 +2,7 @@ import "dotenv/config";
 
 /**
  * Centralized provider configuration.
- * This module catalogs all Manus/Forge dependencies and environment variables,
+ * This module catalogs all infrastructure dependencies and environment variables,
  * providing a single point of truth for provider-specific handling.
  */
 
@@ -26,7 +26,6 @@ export const PROVIDER_CONFIG = {
   // Core infrastructure
   auth: {
     jwtSecret: process.env.JWT_SECRET || "",
-    cookieName: "manus_session", // Standardized cookie name
     ownerOpenId: process.env.OWNER_OPEN_ID || "",
   },
   database: {
@@ -53,6 +52,10 @@ export const PROVIDER_CONFIG = {
  * This can be called during server startup.
  */
 export function validateConfig() {
+  console.log("[Config] Validating configuration...");
+  console.log("[Config] DATABASE_URL exists:", !!process.env.DATABASE_URL);
+  console.log("[Config] SUPABASE_URL exists:", !!process.env.SUPABASE_URL);
+  
   const missing: string[] = [];
   
   // Database is always required
@@ -68,8 +71,10 @@ export function validateConfig() {
   if (missing.length > 0) {
     console.warn(`[Config] Missing environment variables: ${missing.join(", ")}`);
     if (PROVIDER_CONFIG.runtime.isProduction) {
-      console.error("[Config] Critical failure: Supabase configuration missing for production.");
-      process.exit(1);
+      console.error("[Config] Warning: Critical environment variables missing.");
+      // Do not exit process in serverless environment
     }
+  } else {
+    console.log("[Config] Configuration valid.");
   }
 }

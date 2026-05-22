@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "render-deploy": {
+      "source": "render-oss/skills",
+      "sourceType": "github",
+      "skillPath": "skills/render-deploy/SKILL.md",
+      "computedHash": "746656aaafd8953098bf43d4bc3ca3fddcec64d2f60850aa480bbca4cb515763"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
