@@ -1,3 +1,4 @@
+// @ts-ignore
 import { createApp } from "../dist/index.js";
 
 let appInstance: any = null;
