@@ -17,7 +17,7 @@ export const authProvider = {
     if ("getAuthorizationUrl" in provider && typeof (provider as any).getAuthorizationUrl === "function") {
       return (provider as any).getAuthorizationUrl();
     }
-    return "/api/auth/login";
+    return "/login";
   },
 } as IAuthProvider & { getAuthorizationUrl?: () => string };
 

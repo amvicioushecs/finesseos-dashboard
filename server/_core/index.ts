@@ -47,7 +47,10 @@ async function createApp() {
 
   // ── WorkOS AuthKit Endpoints ──────────────────────────────────────────────────
   app.get('/api/auth/login', (req, res) => {
-    const authUrl = (authProvider as any).getAuthorizationUrl ? (authProvider as any).getAuthorizationUrl() : '/';
+    let authUrl = (authProvider as any).getAuthorizationUrl ? (authProvider as any).getAuthorizationUrl() : '/login';
+    if (!authUrl || authUrl === '/api/auth/login') {
+      authUrl = '/login';
+    }
     res.redirect(302, authUrl);
   });
 
