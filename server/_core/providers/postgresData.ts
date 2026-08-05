@@ -32,22 +32,17 @@ export class PostgresDataProvider implements IDataProvider {
 
   private async getDb() {
     if (!this._db) {
-      throw new Error("Postgres Database not configured");
+      console.warn("[Database] Postgres Database not configured");
+      return null;
     }
-    try {
-      // Basic health check: simple query to ensure the pooler is alive
-      await this._db.execute`SELECT 1`;
-      return this._db;
-    } catch (e) {
-      console.error("[Database] Health check failed:", e);
-      throw new Error("Database connection unavailable");
-    }
+    return this._db;
   }
 
   // ─── User operations ────────────────────────────────────────────────────────
 
   async getUserByOpenId(openId: string): Promise<User | undefined> {
     const db = await this.getDb();
+    if (!db) return undefined;
     const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
     return result.length > 0 ? result[0] : undefined;
   }

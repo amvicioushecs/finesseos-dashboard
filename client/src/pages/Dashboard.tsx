@@ -4,7 +4,7 @@
 // Layout: Fixed 320px sidebar + main content area
 // ============================================================
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -448,57 +448,6 @@ const DashboardOverview = ({ links }: { links: AffiliateLink[] }) => {
   useEffect(() => {
     if (metricsQuery.data) setLiveMetrics(metricsQuery.data);
   }, [metricsQuery.data]);
-
-  // Supabase Realtime Subscription
-  useEffect(() => {
-    if (!supabase || !user) return;
-
-    const actionChannel = supabase
-      .channel('realtime:actions')
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'action_feed',
-        filter: `userId=eq.${user.id}`
-      }, (payload) => {
-        setLiveActions(prev => [payload.new, ...prev].slice(0, 15));
-        toast.info(payload.new.title, { 
-          description: payload.new.message,
-          icon: <Zap className="w-4 h-4 text-blue-400" />,
-        });
-      })
-      .subscribe();
-
-    const metricChannel = supabase
-      .channel('realtime:metrics')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'system_metrics',
-        filter: `userId=eq.${user.id}`
-      }, (payload) => {
-        const newData = payload.new as any;
-        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-          setLiveMetrics(prev => {
-            const index = prev.findIndex(m => m.name === newData.name);
-            if (index > -1) {
-              const next = [...prev];
-              next[index] = newData;
-              return next;
-            }
-            return [newData, ...prev];
-          });
-        }
-      })
-      .subscribe();
-
-    return () => {
-      if (supabase) {
-        supabase.removeChannel(actionChannel);
-        supabase.removeChannel(metricChannel);
-      }
-    };
-  }, [user]);
 
   const totalClicks = links.reduce((sum, l) => {
     if (l.clickCount !== undefined) return sum + l.clickCount;
@@ -2068,11 +2017,31 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
 
-  // Load nodes from DB — fall back to mock data when not authenticated
+  // Load nodes from DB
   const nodesQuery = trpc.nodes.list.useQuery(undefined, {
     enabled: isAuthenticated,
     refetchOnWindowFocus: false,
   });
+
+  const links: AffiliateLink[] = (nodesQuery.data as any) || [];
+
+  const handleAddLink = (newLink: AffiliateLink) => {
+    setShowAddModal(false);
+    nodesQuery.refetch();
+  };
+
+  const handleSelectLink = (link: AffiliateLink) => {
+    setSelectedLink(link);
+  };
+
+  const handleDeleteLink = (_link: AffiliateLink) => {
+    nodesQuery.refetch();
+  };
+
+  const handleUpdateLink = (updated: AffiliateLink) => {
+    setSelectedLink(updated);
+    nodesQuery.refetch();
+  };
 
   const navItems = [
     { id: 'dashboard' as ActiveTab, label: 'Overview', icon: LayoutDashboard },
