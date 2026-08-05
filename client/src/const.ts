@@ -2,8 +2,8 @@ export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
 /**
  * Generate login URL at runtime.
- * Now exclusively supports the internal /login route (Supabase).
+ * Now points to WorkOS AuthKit login endpoint (/api/auth/login).
  */
 export const getLoginUrl = () => {
-  return "/login";
+  return "/api/auth/login";
 };
