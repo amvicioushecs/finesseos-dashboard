@@ -1,5 +1,4 @@
-// @ts-ignore
-import { createApp } from "../dist/index.js";
+import { createApp } from "../server/_core/index";
 
 let appInstance: any = null;
 
