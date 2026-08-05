@@ -32,6 +32,13 @@ export const PROVIDER_CONFIG = {
     model: process.env.LLM_MODEL || "gpt-4o",
   },
   
+  // WorkOS AuthKit configuration
+  workos: {
+    clientId: process.env.WORKOS_CLIENT_ID || "",
+    apiKey: process.env.WORKOS_API_KEY || "",
+    redirectUri: process.env.WORKOS_REDIRECT_URI || "http://localhost:5000/api/auth/callback",
+  },
+  
   // Runtime environment
   runtime: {
     nodeEnv: process.env.NODE_ENV || "development",
