@@ -12,6 +12,9 @@
     },
     "render": {
       "httpUrl": "https://mcp.render.com/mcp"
+    },
+    "workos": {
+      "url": "https://mcp.workos.com/mcp"
     }
   }
 }
