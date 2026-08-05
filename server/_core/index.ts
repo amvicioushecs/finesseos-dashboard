@@ -8,7 +8,8 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { validateConfig } from "./providers/config";
-import { dataProvider } from "./providers";
+import { dataProvider, authProvider } from "./providers";
+import { COOKIE_NAME } from "@shared/const";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -44,6 +45,44 @@ async function createApp() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
   console.log("[Server] Configuring routes...");
+
+  // ── WorkOS AuthKit Endpoints ──────────────────────────────────────────────────
+  app.get('/api/auth/login', (req, res) => {
+    const authUrl = (authProvider as any).getAuthorizationUrl ? (authProvider as any).getAuthorizationUrl() : '/';
+    res.redirect(302, authUrl);
+  });
+
+  app.get('/api/auth/callback', async (req, res) => {
+    try {
+      const code = req.query.code as string;
+      const state = req.query.state as string;
+      if (!code) {
+        res.status(400).send('Authorization code missing');
+        return;
+      }
+      const userPayload = await authProvider.handleCallback(code, state);
+      const sessionToken = await authProvider.createSession(userPayload.openId, userPayload.name);
+      
+      res.cookie(COOKIE_NAME, sessionToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        path: '/',
+      });
+      
+      res.redirect(302, '/dashboard');
+    } catch (err) {
+      console.error('[AuthCallback] Error:', err);
+      res.status(500).send('Authentication failed');
+    }
+  });
+
+  app.post('/api/auth/logout', (req, res) => {
+    res.clearCookie(COOKIE_NAME, { path: '/' });
+    res.json({ success: true });
+  });
+
   // ── Tracked affiliate link redirect ──────────────────────────────────────────
   // Public endpoint: GET /go/:trackingId
   // Increments click counter and redirects to the affiliate destination URL
