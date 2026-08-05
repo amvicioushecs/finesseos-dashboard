@@ -14,7 +14,7 @@
       "httpUrl": "https://mcp.render.com/mcp"
     },
     "workos": {
-      "url": "https://mcp.workos.com/mcp"
+      "serverUrl": "https://mcp.workos.com/mcp"
     }
   }
 }
