@@ -1,5 +1,7 @@
 import { LocalAuthProvider } from "./localAuth";
+import { WorkOSAuthProvider } from "./workosAuth";
 import { PostgresDataProvider } from "./postgresData";
+import { PROVIDER_CONFIG } from "./config";
 import type { IAuthProvider, IDataProvider } from "./types";
 
 let _authProvider: IAuthProvider | null = null;
@@ -10,7 +12,14 @@ export const authProvider = {
   createSession: (userId: string, name?: string) => getAuthProvider().createSession(userId, name),
   verifySession: (token: string) => getAuthProvider().verifySession(token),
   handleCallback: (code: string, state: string) => getAuthProvider().handleCallback(code, state),
-} as IAuthProvider;
+  getAuthorizationUrl: () => {
+    const provider = getAuthProvider();
+    if ("getAuthorizationUrl" in provider && typeof (provider as any).getAuthorizationUrl === "function") {
+      return (provider as any).getAuthorizationUrl();
+    }
+    return "/api/auth/login";
+  },
+} as IAuthProvider & { getAuthorizationUrl?: () => string };
 
 export const dataProvider = {
   getUserByOpenId: (openId: string) => getDataProvider().getUserByOpenId(openId),
@@ -36,7 +45,13 @@ export const dataProvider = {
 } as IDataProvider;
 
 function getAuthProvider() {
-  if (!_authProvider) _authProvider = new LocalAuthProvider();
+  if (!_authProvider) {
+    if (PROVIDER_CONFIG.workos.apiKey && PROVIDER_CONFIG.workos.clientId) {
+      _authProvider = new WorkOSAuthProvider();
+    } else {
+      _authProvider = new LocalAuthProvider();
+    }
+  }
   return _authProvider;
 }
 
