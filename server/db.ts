@@ -16,7 +16,7 @@ export async function getDb() {
     try {
       const client = postgres(ENV.databaseUrl, {
         prepare: false, // Recommended for Supabase
-        ssl: true,
+        ssl: process.env.DATABASE_SSL === "false" ? false : true,
       });
       _db = drizzle(client);
     } catch (error) {

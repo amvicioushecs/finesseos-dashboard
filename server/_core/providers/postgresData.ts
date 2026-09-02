@@ -18,7 +18,7 @@ export class PostgresDataProvider implements IDataProvider {
       try {
         const client = postgres(PROVIDER_CONFIG.database.url, {
           prepare: false,
-          ssl: { rejectUnauthorized: false },
+          ssl: process.env.DATABASE_SSL === "false" ? false : { rejectUnauthorized: false },
           max: 10,               // Render free tier limit
           idle_timeout: 20,      // Seconds
           connect_timeout: 10,   // Seconds
