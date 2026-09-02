@@ -5,6 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Dashboard from "./pages/Dashboard";
+import NicheFinder from "./pages/NicheFinder";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Terms from "./pages/Terms";
@@ -16,6 +17,7 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Landing} />
       <Route path={"/dashboard"} component={Dashboard} />
+      <Route path={"/niche-finder"} component={NicheFinder} />
       <Route path={"/login"} component={Login} />
       <Route path={"/terms"} component={Terms} />
       <Route path={"/privacy"} component={Privacy} />

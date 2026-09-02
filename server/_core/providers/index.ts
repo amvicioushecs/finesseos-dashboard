@@ -41,7 +41,10 @@ export const dataProvider = {
   createAction: (userId: string, data: any) => getDataProvider().createAction(userId, data),
   getActions: (userId: string, limit?: number) => getDataProvider().getActions(userId, limit),
   updateSystemMetric: (userId: string, data: any) => getDataProvider().updateSystemMetric(userId, data),
-  getSystemMetrics: (userId: string) => getDataProvider().getSystemMetrics(userId)
+  getSystemMetrics: (userId: string) => getDataProvider().getSystemMetrics(userId),
+  getSavedNiches: (userId: string) => getDataProvider().getSavedNiches(userId),
+  saveNiche: (userId: string, data: any) => getDataProvider().saveNiche(userId, data),
+  deleteNiche: (nicheId: string, userId: string) => getDataProvider().deleteNiche(nicheId, userId)
 } as IDataProvider;
 
 function getAuthProvider() {

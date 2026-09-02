@@ -2,7 +2,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { 
-  users, affiliateNodes, nodeAssets, userIntegrations, actionFeed, systemMetrics,
+  users, affiliateNodes, nodeAssets, userIntegrations, actionFeed, systemMetrics, nicheResearch,
   User, InsertUser, InsertNodeAsset, AffiliateNode, UserIntegration, ActionFeed, SystemMetric
 } from "../../../drizzle/schema";
 import { PROVIDER_CONFIG } from "./config";
@@ -214,6 +214,60 @@ export class PostgresDataProvider implements IDataProvider {
   async getSystemMetrics(userId: string): Promise<any[]> {
     const db = await this.getDb();
     return db.select().from(systemMetrics).where(eq(systemMetrics.userId, userId)).orderBy(desc(systemMetrics.updatedAt));
+  }
+
+  // ─── Niche research operations ───────────────────────────────────────────────
+
+  async getSavedNiches(userId: string): Promise<any[]> {
+    const db = await this.getDb();
+    if (!db) return [];
+    const rows = await db.select().from(nicheResearch).where(eq(nicheResearch.userId, userId)).orderBy(desc(nicheResearch.goldenScore));
+    return rows;
+  }
+
+  async saveNiche(userId: string, data: any): Promise<string> {
+    const db = await this.getDb();
+    if (!db) throw new Error("Database not available");
+    const [row] = await db.insert(nicheResearch).values({
+      userId,
+      seed: data.seed,
+      nicheName: data.nicheName,
+      description: data.description,
+      monthlySearchVolume: data.monthlySearchVolume,
+      competitionLevel: data.competitionLevel,
+      competitionScore: data.competitionScore,
+      monetizationPotential: data.monetizationPotential,
+      buyerIntent: data.buyerIntent,
+      avgSpend: data.avgSpend,
+      goldenScore: data.goldenScore,
+      painPoints: data.painPoints,
+      targetAudience: data.targetAudience,
+      recommendedPrograms: data.recommendedPrograms,
+      contentOpportunities: data.contentOpportunities,
+    }).onConflictDoUpdate({
+      target: [nicheResearch.userId, nicheResearch.nicheName],
+      set: {
+        description: data.description,
+        monthlySearchVolume: data.monthlySearchVolume,
+        competitionLevel: data.competitionLevel,
+        competitionScore: data.competitionScore,
+        monetizationPotential: data.monetizationPotential,
+        buyerIntent: data.buyerIntent,
+        avgSpend: data.avgSpend,
+        goldenScore: data.goldenScore,
+        painPoints: data.painPoints,
+        targetAudience: data.targetAudience,
+        recommendedPrograms: data.recommendedPrograms,
+        contentOpportunities: data.contentOpportunities,
+      },
+    }).returning();
+    return row.id;
+  }
+
+  async deleteNiche(nicheId: string, userId: string): Promise<void> {
+    const db = await this.getDb();
+    if (!db) throw new Error("Database not available");
+    await db.delete(nicheResearch).where(and(eq(nicheResearch.id, nicheId), eq(nicheResearch.userId, userId)));
   }
 
   private rowToFrontendIntegration(row: any): FrontendIntegration {
