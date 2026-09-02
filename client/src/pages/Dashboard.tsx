@@ -5,6 +5,7 @@
 // ============================================================
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useLocation } from 'wouter';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +41,7 @@ import {
   RefreshCw,
   Fingerprint,
   Target,
+  Telescope,
   Sparkles,
   Newspaper,
   BrainCircuit,
@@ -2012,6 +2014,7 @@ const SystemConfig = () => {
 // ─── Main Dashboard Component ──────────────────────────────
 export default function Dashboard() {
   const { user, isAuthenticated, loading: authLoading } = useAuth({ redirectOnUnauthenticated: true });
+  const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [selectedLink, setSelectedLink] = useState<AffiliateLink | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -2121,6 +2124,12 @@ export default function Dashboard() {
 
         {/* Nav */}
         <nav className="flex-1 px-5 mt-10 space-y-2">
+          <NavItem
+            icon={Telescope}
+            label="Niche Finder"
+            active={false}
+            onClick={() => navigate('/niche-finder')}
+          />
           {navItems.map(item => (
             <NavItem
               key={item.id}
