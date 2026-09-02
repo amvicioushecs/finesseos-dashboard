@@ -3,8 +3,59 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   TrendingUp, Target, Users, DollarSign, BarChart3, Lightbulb,
-  Bookmark, BookmarkCheck, Trash2,
+  Bookmark, BookmarkCheck, Trash2, ExternalLink,
 } from 'lucide-react';
+
+// Curated direct signup links for well-known affiliate programs.
+// Matched case-insensitively by substring; unknown programs fall back to a search.
+const PROGRAM_SIGNUP_URLS: { match: string; url: string }[] = [
+  { match: 'amazon', url: 'https://affiliate-program.amazon.com/' },
+  { match: 'shareasale', url: 'https://account.shareasale.com/new-signup.cfm' },
+  { match: 'impact', url: 'https://app.impact.com/secure/loginV2.iol' },
+  { match: 'clickbank', url: 'https://accounts.clickbank.com/overview.htm' },
+  { match: 'cj affiliate', url: 'https://www.cj.com/signup' },
+  { match: 'commission junction', url: 'https://www.cj.com/signup' },
+  { match: 'awin', url: 'https://www.awin.com/us/publishers' },
+  { match: 'rakuten', url: 'https://rakutenadvertising.com/en/affiliate/signup/' },
+  { match: 'skimlinks', url: 'https://skimlinks.com/signup' },
+  { match: 'flexoffers', url: 'https://www.flexoffers.com/' },
+  { match: 'avantlink', url: 'https://www.avantlink.com/apply/' },
+  { match: 'partnerstack', url: 'https://partnerstack.com/' },
+  { match: 'ebay', url: 'https://partnernetwork.ebay.com/' },
+  { match: 'walmart', url: 'https://affiliates.walmart.com/' },
+  { match: 'target', url: 'https://www.target.com/affiliates' },
+  { match: 'etsy', url: 'https://www.etsy.com/affiliates' },
+  { match: 'booking', url: 'https://affiliate.booking.com/' },
+  { match: 'shopify', url: 'https://www.shopify.com/affiliates' },
+  { match: 'clickfunnels', url: 'https://www.clickfunnels.com/affiliates' },
+  { match: 'leadpages', url: 'https://www.leadpages.com/affiliates' },
+  { match: 'convertkit', url: 'https://convertkit.com/affiliates' },
+  { match: 'teachable', url: 'https://teachable.com/affiliates' },
+  { match: 'kinsta', url: 'https://kinsta.com/affiliates/' },
+  { match: 'bluehost', url: 'https://www.bluehost.com/affiliates' },
+  { match: 'hostgator', url: 'https://www.hostgator.com/affiliates' },
+  { match: 'wp engine', url: 'https://wpengine.com/affiliates/' },
+  { match: 'semrush', url: 'https://www.semrush.com/affiliates/' },
+  { match: 'hubspot', url: 'https://www.hubspot.com/partners/affiliate' },
+  { match: 'canva', url: 'https://www.canva.com/affiliates' },
+  { match: 'fiverr', url: 'https://affiliates.fiverr.com/' },
+  { match: 'adidas', url: 'https://www.adidas.com/us/affiliates' },
+  { match: 'getresponse', url: 'https://www.getresponse.com/affiliate-programs' },
+  { match: 'aweber', url: 'https://www.aweber.com/affiliate-program' },
+  { match: 'digistore24', url: 'https://www.digistore24.com/' },
+  { match: 'jvzoo', url: 'https://www.jvzoo.com/' },
+  { match: 'warriorplus', url: 'https://warriorplus.com/' },
+  { match: 'maxbounty', url: 'https://www.maxbounty.com/signup' },
+  { match: 'tradedoubler', url: 'https://www.tradedoubler.com/' },
+];
+
+const programSignupUrl = (name: string) => {
+  const lower = name.toLowerCase();
+  const hit = PROGRAM_SIGNUP_URLS.find((p) => lower.includes(p.match));
+  return hit
+    ? hit.url
+    : `https://www.google.com/search?q=${encodeURIComponent(`${name} affiliate program signup`)}`;
+};
 
 export type GoldenNiche = {
   nicheName: string;
@@ -108,7 +159,17 @@ export function NicheCard({
           <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recommended affiliate programs</p>
           <div className="flex flex-wrap gap-1.5">
             {niche.recommendedPrograms.map((p, i) => (
-              <span key={i} className="badge-highlight">{p}</span>
+              <a
+                key={i}
+                href={programSignupUrl(p)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="badge-highlight inline-flex items-center gap-1 transition-colors hover:opacity-80"
+                title={`Open ${p} affiliate signup`}
+              >
+                {p}
+                <ExternalLink size={10} className="opacity-70" />
+              </a>
             ))}
           </div>
         </div>
