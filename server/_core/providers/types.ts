@@ -64,4 +64,9 @@ export interface IDataProvider {
   // System Metrics operations
   updateSystemMetric(userId: string, data: any): Promise<void>;
   getSystemMetrics(userId: string): Promise<any[]>;
+
+  // Niche research operations
+  getSavedNiches(userId: string): Promise<any[]>;
+  saveNiche(userId: string, data: any): Promise<string>;
+  deleteNiche(nicheId: string, userId: string): Promise<void>;
 }

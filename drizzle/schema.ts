@@ -140,3 +140,34 @@ export const systemMetrics = pgTable('system_metrics', {
 export type SystemMetric = typeof systemMetrics.$inferSelect;
 export type InsertSystemMetric = typeof systemMetrics.$inferInsert;
 
+// ─── Niche Research (saved golden micro-niches) ──────────────────────────────
+
+export const nicheResearch = pgTable('niche_research', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+
+  seed: varchar('seed', { length: 255 }).notNull(),
+  nicheName: varchar('niche_name', { length: 255 }).notNull(),
+  description: text('description').notNull(),
+
+  monthlySearchVolume: varchar('monthly_search_volume', { length: 64 }).notNull(),
+  competitionLevel: varchar('competition_level', { length: 32 }).notNull(),
+  competitionScore: integer('competition_score').notNull(),
+  monetizationPotential: varchar('monetization_potential', { length: 32 }).notNull(),
+  buyerIntent: varchar('buyer_intent', { length: 32 }).notNull(),
+  avgSpend: varchar('avg_spend', { length: 64 }),
+  goldenScore: integer('golden_score').notNull(),
+
+  painPoints: jsonb('pain_points').default([]),
+  targetAudience: text('target_audience'),
+  recommendedPrograms: jsonb('recommended_programs').default([]),
+  contentOpportunities: jsonb('content_opportunities').default([]),
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (t) => ({
+  unq: unique().on(t.userId, t.nicheName),
+}));
+
+export type NicheResearch = typeof nicheResearch.$inferSelect;
+export type InsertNicheResearch = typeof nicheResearch.$inferInsert;
+
