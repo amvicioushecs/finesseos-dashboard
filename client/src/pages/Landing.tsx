@@ -273,10 +273,10 @@ export default function Landing() {
         <div className="relative max-w-5xl mx-auto px-6 text-center">
           <div className="flex justify-center mb-10">
             <img
-              src={BRAND_LOGO}
-              alt="FinesseOS"
-              className="w-auto"
-              style={{ height: '260px', filter: 'drop-shadow(0 0 60px rgba(43,127,255,0.5))' }}
+              src="https://media.base44.com/images/public/6a985497b23342c44502060d/849e51588_LinkedInBannerElevateYourCareerwithExpertInsights.png"
+              alt="FinesseOS — Affiliate Marketing Handled With The Operating System"
+              className="w-full max-w-4xl h-auto rounded-2xl"
+              style={{ filter: 'drop-shadow(0 0 60px rgba(43,127,255,0.4))' }}
             />
           </div>
 
