@@ -276,7 +276,7 @@ export default function Landing() {
               src={BRAND_LOGO}
               alt="FinesseOS"
               className="w-auto"
-              style={{ height: '120px', filter: 'drop-shadow(0 0 40px rgba(43,127,255,0.45))' }}
+              style={{ height: '260px', filter: 'drop-shadow(0 0 60px rgba(43,127,255,0.5))' }}
             />
           </div>
 
