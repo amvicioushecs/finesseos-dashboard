@@ -76,17 +76,20 @@ export default function NicheFinder() {
             <form onSubmit={handleResearch} className="flex flex-col gap-3 md:flex-row md:items-end">
               <div className="flex-1 space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Market or seed keyword</label>
-                <Input
-                  value={seed}
-                  onChange={(e) => setSeed(e.target.value)}
-                  placeholder="e.g. home fitness, pet care, personal finance…"
-                  className="h-11"
-                />
+                <div className="relative">
+                  <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-primary" />
+                  <Input
+                    value={seed}
+                    onChange={(e) => setSeed(e.target.value)}
+                    placeholder="Type a market or seed keyword here…"
+                    className="h-11 pl-10 dark:bg-[#2a3354] dark:border-primary shadow-sm"
+                  />
+                </div>
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Competition</label>
                 <Select value={competition} onValueChange={(v: 'low' | 'any') => setCompetition(v)}>
-                  <SelectTrigger className="h-11 w-[180px]"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-11 w-[180px] dark:bg-[#2a3354] dark:border-primary shadow-sm"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="low">Low competition</SelectItem>
                     <SelectItem value="any">Any level</SelectItem>
