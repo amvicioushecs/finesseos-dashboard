@@ -98,10 +98,14 @@ export default function NicheFinder() {
               </div>
               <button
                 type="submit"
-                className="btn-primary-gradient md:mb-px disabled:opacity-60"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-md px-6 text-sm font-bold text-white transition-all active:scale-95 disabled:opacity-60 md:mb-px"
+                style={{
+                  background: 'linear-gradient(135deg, #7c3aed 0%, #2563eb 50%, #06b6d4 100%)',
+                  boxShadow: '0 4px 14px rgba(37,99,235,.35)',
+                }}
                 disabled={researchMut.isPending || !seed.trim()}
               >
-                <Search size={18} />
+                <Search size={16} />
                 {researchMut.isPending ? 'Researching…' : 'Find Golden Niches'}
               </button>
             </form>
